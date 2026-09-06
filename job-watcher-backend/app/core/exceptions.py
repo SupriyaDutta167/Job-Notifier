@@ -9,3 +9,7 @@ class NotFoundError(JobWatcherException):
 class ConflictError(JobWatcherException):
     """Raised when an operation violates a unique constraint or business rule conflict."""
     pass
+
+class ForbiddenError(JobWatcherException):
+    """Raised when a user is not authorized to perform an action."""
+    pass
