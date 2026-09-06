@@ -57,3 +57,17 @@ pytest
 ```bash
 alembic upgrade head
 ```
+
+## Live Persistence Test
+
+You can manually run a real end-to-end integration test against a live company board (e.g. Figma) that persists data into your database.
+
+Requirements:
+1. Ensure .env contains a valid DATABASE_URL pointing to your real Supabase or local PostgreSQL instance.
+2. Ensure you have run database migrations (lembic upgrade head).
+
+Run the test manually:
+\\ash
+python scripts/live_test_persistence.py
+\
+*Note: This script makes real external HTTP requests and creates real \Job\ records in your database.*
