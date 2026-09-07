@@ -1,0 +1,49 @@
+name: Scheduled Job Monitor
+
+on:
+  schedule:
+    # Run every 2 hours
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+concurrency:
+  group: job-monitor
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    
+    env:
+      APP_NAME: job-watcher
+      APP_ENV: production
+      DEBUG: false
+      LOG_LEVEL: INFO
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Schema Verification
+        run: |
+          alembic current
+        # Validates database connection and environment, read-only
+        
+      - name: Run Scan Worker
+        run: |
+          # Use python module execution pattern
+          python -m app.worker.scan
