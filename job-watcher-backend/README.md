@@ -90,3 +90,23 @@ The pipeline operates strictly in memory before updating PostgreSQL:
     - Include: 15%
     Total matching score is between 0.0 and 1.0. 
 8. **Match Reason:** A testable reason string is generated justifying why a job matched or failed.
+
+## Telegram Notifications
+
+The platform supports alerting users of job matches via Telegram.
+
+### Setup
+1. Create a bot using [@BotFather](https://t.me/botfather) on Telegram.
+2. Obtain your bot token.
+3. Obtain your personal Telegram Chat ID (e.g. from [@userinfobot](https://t.me/userinfobot)).
+4. Add these to your \.env\ file:
+\\env
+TELEGRAM_BOT_TOKEN=your_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
+\**Security Warning:** Never commit your Telegram bot token to source control!
+
+### Testing Notifications
+You can manually verify that your configuration works by running:
+\\ash
+python scripts/test_telegram.py
+\

@@ -14,6 +14,7 @@ class PersistenceResult(BaseModel):
     failed_jobs: int = 0
     errors: list[str] = []
     crawler_success: bool = False
+    new_job_ids: list[UUID] = []
 
 from app.services.crawler.orchestrator import execute_crawl
 
@@ -45,6 +46,7 @@ def run_persistence_pipeline(db: Session, career_url: str, company_id: UUID) -> 
             
             if is_new:
                 result.new_jobs += 1
+                result.new_job_ids.append(job.id)
                 logger.debug(f"New job discovered: {job.title} (ID: {job.external_id})")
             else:
                 result.existing_jobs += 1
