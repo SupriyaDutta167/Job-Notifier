@@ -9,6 +9,9 @@ class CrawlerResult(BaseModel):
     source: str
     success: bool
     error: Optional[str] = None
+    error_category: Optional[str] = None
+    duration_ms: Optional[int] = None
+    requests_made: Optional[int] = None
     
 class CrawlerAdapter(ABC):
     @abstractmethod

@@ -15,8 +15,9 @@ def test_extract_company_identifier():
     with pytest.raises(CrawlerParseError):
         adapter._extract_company_identifier("https://jobs.lever.co/")
 
-@patch("httpx.Client.get")
-def test_discover_jobs_success(mock_get):
+def test_discover_jobs_success(monkeypatch):
+    mock_get = MagicMock()
+    mock_get = MagicMock()
     adapter = LeverAdapter()
     company_id = uuid.uuid4()
     
@@ -37,6 +38,7 @@ def test_discover_jobs_success(mock_get):
     ]
     mock_get.return_value = mock_response
     
+    monkeypatch.setattr(adapter.client, "get", mock_get)
     result = adapter.discover_jobs("https://jobs.lever.co/test", company_id)
     
     assert result.success is True
@@ -60,8 +62,9 @@ def test_discover_jobs_success(mock_get):
     
     mock_get.assert_called_once_with("https://api.lever.co/v0/postings/test?mode=json")
 
-@patch("httpx.Client.get")
-def test_discover_jobs_malformed_skipped(mock_get):
+def test_discover_jobs_malformed_skipped(monkeypatch):
+    mock_get = MagicMock()
+    mock_get = MagicMock()
     adapter = LeverAdapter()
     company_id = uuid.uuid4()
     
@@ -87,14 +90,16 @@ def test_discover_jobs_malformed_skipped(mock_get):
     ]
     mock_get.return_value = mock_response
     
+    monkeypatch.setattr(adapter.client, "get", mock_get)
     result = adapter.discover_jobs("https://jobs.lever.co/test", company_id)
     
     assert result.success is True
     assert len(result.jobs) == 1
     assert result.jobs[0].title == "Valid Job"
 
-@patch("httpx.Client.get")
-def test_discover_jobs_http_error(mock_get):
+def test_discover_jobs_http_error(monkeypatch):
+    mock_get = MagicMock()
+    mock_get = MagicMock()
     adapter = LeverAdapter()
     company_id = uuid.uuid4()
     
@@ -102,27 +107,31 @@ def test_discover_jobs_http_error(mock_get):
     response = httpx.Response(404, request=request)
     mock_get.side_effect = httpx.HTTPStatusError("Not Found", request=request, response=response)
     
+    monkeypatch.setattr(adapter.client, "get", mock_get)
     result = adapter.discover_jobs("https://jobs.lever.co/test", company_id)
     
     assert result.success is False
     assert result.jobs == []
     assert "HTTP error 404" in result.error
 
-@patch("httpx.Client.get")
-def test_discover_jobs_timeout(mock_get):
+def test_discover_jobs_timeout(monkeypatch):
+    mock_get = MagicMock()
+    mock_get = MagicMock()
     adapter = LeverAdapter()
     company_id = uuid.uuid4()
     
     mock_get.side_effect = httpx.TimeoutException("Timeout")
     
+    monkeypatch.setattr(adapter.client, "get", mock_get)
     result = adapter.discover_jobs("https://jobs.lever.co/test", company_id)
     
     assert result.success is False
     assert result.jobs == []
     assert "Timeout fetching" in result.error
 
-@patch("httpx.Client.get")
-def test_discover_jobs_invalid_json_structure(mock_get):
+def test_discover_jobs_invalid_json_structure(monkeypatch):
+    mock_get = MagicMock()
+    mock_get = MagicMock()
     adapter = LeverAdapter()
     company_id = uuid.uuid4()
     
@@ -132,6 +141,7 @@ def test_discover_jobs_invalid_json_structure(mock_get):
     mock_response.json.return_value = {"error": "Not an array"}
     mock_get.return_value = mock_response
     
+    monkeypatch.setattr(adapter.client, "get", mock_get)
     result = adapter.discover_jobs("https://jobs.lever.co/test", company_id)
     
     assert result.success is False

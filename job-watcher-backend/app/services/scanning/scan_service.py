@@ -84,7 +84,23 @@ class ScanService:
             success_count = 0
             fail_count = 0
             
+            import time
+            from app.core.config import settings
+            scan_start_time = time.monotonic()
+            
             for wp_company in companies:
+                if time.monotonic() - scan_start_time > settings.MAX_SCAN_DURATION_SECONDS:
+                    logger.error("Global scan duration exceeded budget, aborting remaining companies.")
+                    error = ScanError(
+                        scan_run_id=scan_run.id,
+                        error_type="GLOBAL_BUDGET_EXCEEDED",
+                        message="Scan duration exceeded budget"
+                    )
+                    db.add(error)
+                    db.commit()
+                    result.errors += 1
+                    break
+                    
                 result.career_urls_scanned += 1
                 try:
                     # 1. Crawl and Persist
@@ -99,9 +115,13 @@ class ScanService:
                         error = ScanError(
                             scan_run_id=scan_run.id,
                             watch_profile_company_id=wp_company.id,
-                            error_type="CRAWLER_ERROR",
-                            message="Crawler returned failure",
-                            details={"errors": persistence_result.errors}
+                            error_type=persistence_result.error_category or "CRAWLER_ERROR",
+                            message="Crawler returned failure" if not persistence_result.errors else persistence_result.errors[0],
+                            details={
+                                "errors": persistence_result.errors,
+                                "duration_ms": persistence_result.duration_ms,
+                                "requests_made": persistence_result.requests_made
+                            }
                         )
                         db.add(error)
                         db.commit()

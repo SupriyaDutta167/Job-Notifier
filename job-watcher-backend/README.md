@@ -141,3 +141,27 @@ You can manually run a complete live scan worker locally using your `.env` confi
 python -m app.worker.scan
 ```
 This performs a full live crawl, persistence, matching, and notification dispatch run across all active configured Watch Profiles.
+
+## Supported ATS Platforms
+
+Job Watcher detects and seamlessly parses data from the following Applicant Tracking Systems.
+
+- **Greenhouse**
+- **Lever**
+- **Ashby**
+- **Workday** (Public career pages)
+
+### Workday Integration Details
+Support for Workday relies on the public career-site endpoints (typically found on *.myworkdayjobs.com domains) using standard HTTP POST requests (/wday/cxs/{tenant}/{site}/jobs).
+
+**Important Limitations:**
+- **No Authenticated APIs:** This integration uses public endpoints only. No OAuth tokens or HR integration credentials are required or supported.
+- **Bot Protection:** If a specific company enables aggressive anti-bot protection (e.g., Cloudflare, CAPTCHA, or HTTP 403 blocks), the crawl will safely fail and skip the company. No anti-bot bypass logic (e.g., Playwright/Selenium) is implemented.
+- **Supported URLs:** Expected format is https://<tenant>.wd<N>.myworkdayjobs.com/<site> (locales like /en-US/ are supported).
+- **Multiple Locations:** If a job lists multiple locations, they are extracted as a single comma-separated string based on Workday's list representation.
+
+**Live Workday Test:**
+To verify a Workday endpoint without modifying the database, run:
+`ash
+python scripts/live_test_workday.py https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite
+`

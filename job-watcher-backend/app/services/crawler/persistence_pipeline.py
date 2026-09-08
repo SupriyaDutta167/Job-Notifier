@@ -15,6 +15,9 @@ class PersistenceResult(BaseModel):
     errors: list[str] = []
     crawler_success: bool = False
     new_job_ids: list[UUID] = []
+    error_category: str | None = None
+    duration_ms: int | None = None
+    requests_made: int | None = None
 
 from app.services.crawler.orchestrator import execute_crawl
 
@@ -29,7 +32,10 @@ def run_persistence_pipeline(db: Session, career_url: str, company_id: UUID) -> 
     crawler_result = execute_crawl(career_url, company_id)
     
     result = PersistenceResult(
-        crawler_success=crawler_result.success
+        crawler_success=crawler_result.success,
+        error_category=crawler_result.error_category,
+        duration_ms=crawler_result.duration_ms,
+        requests_made=crawler_result.requests_made
     )
     
     if not crawler_result.success:
