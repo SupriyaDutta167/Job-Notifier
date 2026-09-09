@@ -1,19 +1,37 @@
-# React + Vite
+# Job Watcher Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend for the Job Watcher application, built with React, Vite, and TypeScript.
 
-Currently, two official plugins are available:
+## Prerequisites
+- Node.js (v18 or higher recommended)
+- Existing Job Watcher FastAPI Backend
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Installation
+1. Navigate to this directory.
+2. Run `npm install` to install dependencies.
 
-## React Compiler
+## Environment Variables
+Copy `.env.example` to `.env.local` and populate the values:
+```bash
+cp .env.example .env.local
+```
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Required Configuration
+- `VITE_SUPABASE_URL`: The URL of your Supabase project.
+- `VITE_SUPABASE_ANON_KEY`: The public/anon key for Supabase Auth.
+- `VITE_API_BASE_URL`: The URL of the FastAPI backend (e.g., `http://localhost:8000`).
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+**Note**: Do NOT include backend secrets like `DATABASE_URL` or `TELEGRAM_BOT_TOKEN` in frontend environment files.
 
-## Expanding the ESLint configuration
+## Local Development
+Start the development server:
+```bash
+npm run dev
+```
+The application will run on `http://localhost:5173`. Make sure your backend server is also running and CORS is configured to allow this origin.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Available Scripts
+- `npm run dev` - Start local development server
+- `npm run build` - Build the application for production
+- `npm run lint` - Run ESLint to check for code issues
+- `npx tsc --noEmit` - Run TypeScript compiler to check for type errors
