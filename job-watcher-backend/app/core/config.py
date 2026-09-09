@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     TELEGRAM_CHAT_ID: Optional[str] = None
     TELEGRAM_API_BASE_URL: str = "https://api.telegram.org"
     
+    SUPABASE_JWT_SECRET: Optional[str] = None
+    
     CRAWLER_REQUEST_TIMEOUT_SECONDS: int = 15
     CRAWLER_MAX_RETRIES: int = 2
     CRAWLER_MAX_REQUESTS_PER_CRAWL: int = 150

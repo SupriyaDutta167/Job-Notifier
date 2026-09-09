@@ -11,9 +11,11 @@ from app.core.exceptions import NotFoundError, ConflictError
 router = APIRouter()
 
 # Dummy dependency to simulate an authenticated user context since auth is not implemented yet.
-# We accept an x-user-id header to allow testing cross-user scoping properly.
-def get_current_user_id(x_user_id: UUID = Header(..., description="Simulate authenticated user UUID")) -> UUID:
-    return x_user_id
+from app.core.auth.dependencies import get_current_user
+from app.db.models.user import User
+
+def get_current_user_id(user: User = Depends(get_current_user)) -> UUID:
+    return user.id
 
 @router.post("", response_model=WatchProfileResponse, status_code=status.HTTP_201_CREATED)
 def create_watch_profile(data: WatchProfileCreate, db: Session = Depends(get_db), user_id: UUID = Depends(get_current_user_id)):

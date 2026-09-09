@@ -1,6 +1,6 @@
 import os
 
-base_dir = r"D:\Chandigarh University\Hackathons\Job Notifier\job-watcher-backend"
+base_dir = r".""
 
 test_content = """import pytest
 import uuid

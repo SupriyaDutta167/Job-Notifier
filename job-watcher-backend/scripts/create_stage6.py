@@ -1,6 +1,6 @@
 import os
 
-base_dir = r"D:\Chandigarh University\Hackathons\Job Notifier\job-watcher-backend"
+base_dir = r".""
 os.makedirs(os.path.join(base_dir, "app/services/jobs"), exist_ok=True)
 
 schemas_update = """from uuid import UUID

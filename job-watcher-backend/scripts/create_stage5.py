@@ -1,6 +1,6 @@
 import os
 
-base_dir = r"D:\Chandigarh University\Hackathons\Job Notifier\job-watcher-backend"
+base_dir = r".""
 
 files = {
     "app/services/companies/company_service.py": """from uuid import UUID

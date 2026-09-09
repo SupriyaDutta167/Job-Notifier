@@ -1,6 +1,6 @@
 import os
 
-base_dir = r"D:\Chandigarh University\Hackathons\Job Notifier\job-watcher-backend"
+base_dir = r".""
 crawler_dir = os.path.join(base_dir, "app/services/crawler")
 adapters_dir = os.path.join(crawler_dir, "adapters")
 os.makedirs(adapters_dir, exist_ok=True)

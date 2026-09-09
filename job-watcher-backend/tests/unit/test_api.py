@@ -5,10 +5,21 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from app.main import app
 from app.core.exceptions import NotFoundError, ConflictError
+from app.core.auth.dependencies import get_current_user
+from app.db.models.user import User
 
 client = TestClient(app)
 USER_ID = str(uuid.uuid4())
-HEADERS = {"x-user-id": USER_ID}
+
+def override_get_current_user():
+    user = User(id=uuid.UUID(USER_ID), auth_user_id=uuid.uuid4(), email="test@example.com")
+    return user
+
+@pytest.fixture(autouse=True)
+def setup_overrides():
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 @patch("app.api.v1.companies.company_service")
 def test_create_company(mock_service):
@@ -48,7 +59,7 @@ def test_create_watch_profile(mock_service):
     mock_profile.updated_at = datetime.now()
     mock_service.create_watch_profile.return_value = mock_profile
     
-    response = client.post("/api/v1/watch-profiles", json={"name": "Profile 1"}, headers=HEADERS)
+    response = client.post("/api/v1/watch-profiles", json={"name": "Profile 1"})
     assert response.status_code == 201
     assert response.json()["name"] == "Profile 1"
 
@@ -56,7 +67,7 @@ def test_create_watch_profile(mock_service):
 def test_get_watch_profile_cross_user_rejection(mock_service):
     # Mock service throwing NotFoundError when access is denied (cross-user)
     mock_service.get_watch_profile.side_effect = NotFoundError("Access denied")
-    response = client.get(f"/api/v1/watch-profiles/{uuid.uuid4()}", headers=HEADERS)
+    response = client.get(f"/api/v1/watch-profiles/{uuid.uuid4()}")
     assert response.status_code == 404
 
 @patch("app.api.v1.watch_profiles.watch_profile_service")
@@ -74,7 +85,7 @@ def test_add_company_to_watch_profile(mock_service):
     response = client.post(
         f"/api/v1/watch-profiles/{uuid.uuid4()}/companies", 
         json={"company_id": str(uuid.uuid4()), "career_url": "https://example.com/careers"}, 
-        headers=HEADERS
+        
     )
     assert response.status_code == 201
     assert response.json()["career_url"] == "https://example.com/careers"
@@ -96,7 +107,7 @@ def test_create_watch_rule(mock_service):
     response = client.post(
         f"/api/v1/watch-profiles/{uuid.uuid4()}/rules", 
         json={"job_type": "internship", "role_keywords": ["sde"]}, 
-        headers=HEADERS
+        
     )
     assert response.status_code == 201
     assert response.json()["job_type"] == "internship"

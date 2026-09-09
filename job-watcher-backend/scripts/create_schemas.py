@@ -1,6 +1,6 @@
 import os
 
-base_dir = r"D:\Chandigarh University\Hackathons\Job Notifier\job-watcher-backend\app\schemas"
+base_dir = r"."\app\schemas"
 os.makedirs(base_dir, exist_ok=True)
 
 schemas = {

@@ -52,3 +52,21 @@ def test_orm_attributes_conversion():
     assert response.id == orm_instance.id
     assert response.name == "ORM Co"
     assert str(response.website_url) == "https://orm.com/"
+
+def test_watch_profile_company_url_validation():
+    # Valid url
+    wpc = WatchProfileCompanyCreate(company_id=uuid.uuid4(), career_url="https://careers.test.com")
+    assert str(wpc.career_url) == "https://careers.test.com/"
+    
+    # Invalid url (localhost)
+    with pytest.raises(ValidationError) as exc_info:
+        WatchProfileCompanyCreate(company_id=uuid.uuid4(), career_url="http://localhost:8000/careers")
+    assert "URL cannot point to localhost" in str(exc_info.value)
+    
+    with pytest.raises(ValidationError) as exc_info:
+        WatchProfileCompanyCreate(company_id=uuid.uuid4(), career_url="http://127.0.0.1/jobs")
+    assert "URL cannot point to localhost" in str(exc_info.value)
+    
+    # Invalid url schemes (ftp, etc are rejected by HttpUrl by default, but let's test)
+    with pytest.raises(ValidationError):
+        WatchProfileCompanyCreate(company_id=uuid.uuid4(), career_url="ftp://server/jobs")
