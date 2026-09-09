@@ -10,6 +10,10 @@ concurrency:
   group: job-monitor
   cancel-in-progress: false
 
+defaults:
+  run:
+    working-directory: job-watcher-backend
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -32,11 +36,13 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
+          cache-dependency-path: 'job-watcher-backend/requirements.txt'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          python -m playwright install chromium --with-deps
 
       - name: Run Schema Verification
         run: |
