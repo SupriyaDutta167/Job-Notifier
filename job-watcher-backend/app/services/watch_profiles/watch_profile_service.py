@@ -56,7 +56,11 @@ def add_company_to_watch_profile(db: Session, user_id: UUID, profile_id: UUID, d
     if not company:
         raise NotFoundError("Company not found")
         
-    wpc = WatchProfileCompany(**data.model_dump(), watch_profile_id=profile_id)
+    wpc_data = data.model_dump()
+    if wpc_data.get('career_url'):
+        wpc_data['career_url'] = str(wpc_data['career_url'])
+        
+    wpc = WatchProfileCompany(**wpc_data, watch_profile_id=profile_id)
     db.add(wpc)
     try:
         db.commit()
@@ -81,6 +85,9 @@ def update_watch_profile_company(db: Session, user_id: UUID, profile_id: UUID, r
         raise NotFoundError("Watch profile company relationship not found")
         
     update_data = data.model_dump(exclude_unset=True)
+    if 'career_url' in update_data and update_data['career_url']:
+        update_data['career_url'] = str(update_data['career_url'])
+        
     for key, value in update_data.items():
         setattr(wpc, key, value)
     db.commit()

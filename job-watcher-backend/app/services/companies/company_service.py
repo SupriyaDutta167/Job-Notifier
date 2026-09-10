@@ -16,6 +16,9 @@ def create_company(db: Session, data: CompanyCreate) -> Company:
         slug = re.sub(r'[^a-z0-9]+', '-', company_data['name'].lower()).strip('-')
         company_data['slug'] = slug
         
+    if company_data.get('website_url'):
+        company_data['website_url'] = str(company_data['website_url'])
+        
     company = Company(**company_data)
     db.add(company)
     try:
@@ -38,6 +41,8 @@ def list_companies(db: Session) -> list[Company]:
 def update_company(db: Session, company_id: UUID, data: CompanyUpdate) -> Company:
     company = get_company(db, company_id)
     update_data = data.model_dump(exclude_unset=True)
+    if 'website_url' in update_data and update_data['website_url']:
+        update_data['website_url'] = str(update_data['website_url'])
     
     for key, value in update_data.items():
         setattr(company, key, value)
