@@ -8,19 +8,18 @@ from app.schemas.job import JobResponse
 from app.schemas.watch_profile_company import WatchProfileCompanyCreate
 
 def test_company_create_valid():
-    data = {"name": "Test Co", "slug": "test-co", "website_url": "https://test.com"}
+    data = {"name": "Test Co", "website_url": "https://test.com"}
     company = CompanyCreate(**data)
     assert company.name == "Test Co"
-    assert company.slug == "test-co"
     assert str(company.website_url) == "https://test.com/"
 
 def test_company_create_invalid_empty_name():
     with pytest.raises(ValidationError):
-        CompanyCreate(name="", slug="test-co")
+        CompanyCreate(name="")
 
 def test_company_create_invalid_url():
     with pytest.raises(ValidationError):
-        CompanyCreate(name="Test Co", slug="test-co", website_url="not-a-url")
+        CompanyCreate(name="Test Co", website_url="not-a-url")
 
 def test_company_update_partial():
     update = CompanyUpdate(name="New Name")

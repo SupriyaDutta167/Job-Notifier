@@ -7,8 +7,9 @@ class CompanyBase(BaseModel):
     slug: str = Field(..., min_length=1)
     website_url: HttpUrl | None = None
 
-class CompanyCreate(CompanyBase):
-    pass
+class CompanyCreate(BaseModel):
+    name: str = Field(..., min_length=1)
+    website_url: HttpUrl | None = None
 
 class CompanyUpdate(BaseModel):
     name: str | None = Field(None, min_length=1)

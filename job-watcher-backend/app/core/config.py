@@ -12,7 +12,13 @@ class Settings(BaseSettings):
     TELEGRAM_CHAT_ID: Optional[str] = None
     TELEGRAM_API_BASE_URL: str = "https://api.telegram.org"
     
-    SUPABASE_JWT_SECRET: Optional[str] = None
+    SUPABASE_URL: str = ""
+    
+    @property
+    def supabase_jwks_url(self) -> str:
+        if not self.SUPABASE_URL:
+            return ""
+        return f"{self.SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
     
     CRAWLER_REQUEST_TIMEOUT_SECONDS: int = 15
     CRAWLER_MAX_RETRIES: int = 2

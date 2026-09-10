@@ -8,11 +8,12 @@ from app.core.exceptions import ConflictError
 
 def test_create_company_service():
     mock_db = MagicMock()
-    data = CompanyCreate(name="Service Co", slug="service-co")
+    data = CompanyCreate(name="Service Co")
     
     company = create_company(mock_db, data)
     
     assert company.name == "Service Co"
+    assert company.slug == "service-co"
     mock_db.add.assert_called_once()
     mock_db.commit.assert_called_once()
     mock_db.refresh.assert_called_once()
@@ -20,7 +21,7 @@ def test_create_company_service():
 def test_create_company_service_integrity_error():
     mock_db = MagicMock()
     mock_db.commit.side_effect = IntegrityError("statement", "params", "orig")
-    data = CompanyCreate(name="Service Co", slug="service-co")
+    data = CompanyCreate(name="Service Co")
     
     with pytest.raises(ConflictError) as exc_info:
         create_company(mock_db, data)

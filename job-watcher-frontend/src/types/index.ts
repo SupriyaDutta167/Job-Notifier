@@ -34,15 +34,20 @@ export interface WatchProfileCompany {
   id: string;
   watch_profile_id: string;
   company_id: string;
+  career_url: string;
+  is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface WatchRule {
   id: string;
   watch_profile_id: string;
-  rule_type: string;
-  condition: string;
-  value: string;
+  job_type?: string;
+  role_keywords?: string[];
+  location_keywords?: string[];
+  include_keywords?: string[];
+  exclude_keywords?: string[];
   created_at: string;
   updated_at: string;
 }

@@ -2,13 +2,21 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+import re
+
 from app.db.models.company import Company
 from app.db.models.watch_profile_company import WatchProfileCompany
 from app.schemas.company import CompanyCreate, CompanyUpdate
 from app.core.exceptions import NotFoundError, ConflictError
 
 def create_company(db: Session, data: CompanyCreate) -> Company:
-    company = Company(**data.model_dump())
+    company_data = data.model_dump()
+    if 'slug' not in company_data or not company_data.get('slug'):
+        # Generate slug from name
+        slug = re.sub(r'[^a-z0-9]+', '-', company_data['name'].lower()).strip('-')
+        company_data['slug'] = slug
+        
+    company = Company(**company_data)
     db.add(company)
     try:
         db.commit()
@@ -16,7 +24,7 @@ def create_company(db: Session, data: CompanyCreate) -> Company:
         return company
     except IntegrityError:
         db.rollback()
-        raise ConflictError(f"Company with slug '{data.slug}' already exists.")
+        raise ConflictError(f"Company with slug '{company_data['slug']}' already exists.")
 
 def get_company(db: Session, company_id: UUID) -> Company:
     company = db.execute(select(Company).where(Company.id == company_id)).scalars().first()

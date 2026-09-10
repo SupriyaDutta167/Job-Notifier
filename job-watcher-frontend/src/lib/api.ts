@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { parseApiError } from './utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -57,7 +58,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     } catch {
       // Not JSON
     }
-    throw new ApiError(response.status, errorData?.detail || response.statusText, errorData);
+    const errorMessage = parseApiError(errorData, response.statusText);
+    throw new ApiError(response.status, errorMessage, errorData);
   }
 
   // Handle empty responses
