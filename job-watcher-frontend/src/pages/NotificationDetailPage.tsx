@@ -66,15 +66,19 @@ export const NotificationDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center" data-testid="notification-detail-loading">
-        <Spinner className="h-8 w-8 text-blue-600" />
+        <Spinner className="h-8 w-8 text-cyan-400" />
       </div>
     );
   }
 
   if (error || !notification) {
     return (
-      <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate('/dashboard/notifications')} className="mb-2">
+      <div className="space-y-4 max-w-4xl mx-auto">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard/notifications')}
+          className="text-cyan-400 hover:text-cyan-300 font-mono text-xs mb-2"
+        >
           ← Back to Notifications
         </Button>
         <ErrorMessage message={error || 'Notification not found'} />
@@ -85,11 +89,23 @@ export const NotificationDetailPage: React.FC = () => {
   const renderStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case 'sent':
-        return <Badge variant="success" className="gap-1">✓ Sent</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-mono font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-400">
+            ✓ Sent
+          </span>
+        );
       case 'failed':
-        return <Badge variant="error" className="gap-1">✕ Failed</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-mono font-bold bg-red-950/60 border border-red-500/40 text-red-400">
+            ✕ Failed
+          </span>
+        );
       case 'pending':
-        return <Badge variant="warning" className="gap-1">⏳ Pending</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-mono font-bold bg-amber-950/60 border border-amber-500/40 text-amber-400">
+            ⏳ Pending
+          </span>
+        );
       default:
         return <Badge variant="default">{status}</Badge>;
     }
@@ -99,14 +115,14 @@ export const NotificationDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-800/60">
         <Link
           to="/dashboard/notifications"
-          className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+          className="inline-flex items-center text-xs font-mono text-cyan-400 hover:text-cyan-300 font-medium"
         >
           ← Back to Notifications
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {notification.status === 'failed' && (
             <Button
               variant="outline"
@@ -114,6 +130,7 @@ export const NotificationDetailPage: React.FC = () => {
               onClick={handleRetry}
               isLoading={retrying}
               disabled={retrying}
+              className="border-red-500/30 text-red-300 hover:bg-red-950/40 text-xs font-mono"
             >
               Retry Delivery
             </Button>
@@ -123,7 +140,7 @@ export const NotificationDetailPage: React.FC = () => {
               href={targetUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-md bg-blue-600 py-1.5 px-3 text-sm font-medium text-white hover:bg-blue-700"
+              className="inline-flex items-center justify-center rounded-xl bg-cyan-500 py-1.5 px-3.5 text-xs font-semibold text-slate-950 hover:bg-cyan-400 shadow-lg shadow-cyan-500/20"
             >
               Apply / View Job ↗
             </a>
@@ -133,60 +150,60 @@ export const NotificationDetailPage: React.FC = () => {
 
       {retryMessage && (
         <div
-          className={`p-4 rounded-md text-sm ${
+          className={`p-4 rounded-xl text-xs font-mono border ${
             retryMessage.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+              ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+              : 'bg-red-950/40 text-red-300 border-red-500/30'
           }`}
         >
           {retryMessage.text}
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="border-b border-slate-800/60 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <span className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cyan-400 block">
                 {notification.company_name || 'Unknown Company'}
               </span>
-              <CardTitle className="text-2xl mt-1">
+              <CardTitle className="text-2xl mt-1 text-white font-sans">
                 {notification.job_title || 'Job Posting'}
               </CardTitle>
             </div>
             <div>{renderStatusBadge(notification.status)}</div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+        <CardContent className="pt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 font-mono text-xs">
             <div>
-              <span className="block text-xs font-medium text-gray-500 uppercase">Channel</span>
-              <span className="block text-sm font-medium text-gray-900 mt-0.5 capitalize">
+              <span className="block text-slate-500 uppercase">Channel</span>
+              <span className="block text-sky-400 mt-0.5 capitalize font-semibold">
                 {notification.channel}
               </span>
             </div>
             <div>
-              <span className="block text-xs font-medium text-gray-500 uppercase">Watch Profile</span>
-              <span className="block text-sm font-medium text-gray-900 mt-0.5">
+              <span className="block text-slate-500 uppercase">Watch Profile</span>
+              <span className="block text-white mt-0.5 font-semibold">
                 {notification.watch_profile_name || '—'}
               </span>
             </div>
             <div>
-              <span className="block text-xs font-medium text-gray-500 uppercase">Created Time</span>
-              <span className="block text-sm text-gray-700 mt-0.5">
+              <span className="block text-slate-500 uppercase">Created Time</span>
+              <span className="block text-slate-300 mt-0.5">
                 {formatDate(notification.created_at)}
               </span>
             </div>
             <div>
-              <span className="block text-xs font-medium text-gray-500 uppercase">Sent Time</span>
-              <span className="block text-sm text-gray-700 mt-0.5">
+              <span className="block text-slate-500 uppercase">Sent Time</span>
+              <span className="block text-slate-300 mt-0.5">
                 {formatDate(notification.sent_at)}
               </span>
             </div>
             {notification.recipient && (
               <div>
-                <span className="block text-xs font-medium text-gray-500 uppercase">Recipient Destination</span>
-                <span className="block text-sm text-gray-700 mt-0.5 font-mono">
+                <span className="block text-slate-500 uppercase">Recipient Destination</span>
+                <span className="block text-cyan-400 mt-0.5">
                   {notification.recipient}
                 </span>
               </div>
@@ -195,11 +212,11 @@ export const NotificationDetailPage: React.FC = () => {
 
           {/* Failure reason if failed */}
           {notification.status === 'failed' && notification.error_message && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-red-800 flex items-center gap-1.5 mb-1">
+            <div className="bg-red-950/40 border border-red-500/30 rounded-xl p-4 font-mono text-xs">
+              <h4 className="font-semibold text-red-300 flex items-center gap-1.5 mb-1.5 text-sm">
                 <span>✕</span> Delivery Failure Reason
               </h4>
-              <p className="text-sm text-red-700 break-words font-mono">
+              <p className="text-red-300/90 break-words">
                 {notification.error_message}
               </p>
             </div>
@@ -207,20 +224,20 @@ export const NotificationDetailPage: React.FC = () => {
 
           {/* Match context */}
           {(notification.match_reason || notification.match_score !== undefined) && (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-blue-900 mb-2">
+            <div className="bg-slate-950/80 border border-cyan-500/30 rounded-xl p-5 font-mono text-xs space-y-2">
+              <h4 className="text-sm font-semibold text-cyan-300 font-sans">
                 Why this job matched {notification.watch_profile_name ? `"${notification.watch_profile_name}"` : 'your profile'}
               </h4>
               {notification.match_score !== undefined && notification.match_score !== null && (
-                <div className="mb-2">
-                  <span className="text-xs text-blue-700 font-medium">Match Confidence Score: </span>
-                  <span className="text-xs font-bold text-blue-900">
+                <div className="text-slate-300">
+                  <span>Match Confidence Score: </span>
+                  <span className="font-bold text-emerald-400">
                     {Math.round(notification.match_score * 100)}%
                   </span>
                 </div>
               )}
               {notification.match_reason && (
-                <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">
                   {notification.match_reason}
                 </p>
               )}
@@ -230,8 +247,8 @@ export const NotificationDetailPage: React.FC = () => {
           {/* Notification Message preview */}
           {notification.message && (
             <div>
-              <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Alert Message Content</h4>
-              <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-xs whitespace-pre-wrap overflow-x-auto">
+              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">Alert Message Content</h4>
+              <div className="bg-slate-950 border border-slate-800 text-slate-200 p-4 rounded-xl font-mono text-xs whitespace-pre-wrap overflow-x-auto">
                 {notification.message}
               </div>
             </div>
@@ -241,3 +258,5 @@ export const NotificationDetailPage: React.FC = () => {
     </div>
   );
 };
+
+export default NotificationDetailPage;

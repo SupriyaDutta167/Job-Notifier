@@ -6,6 +6,12 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { 
+  Building2, 
+  MapPin, 
+  ExternalLink, 
+  FileText
+} from 'lucide-react';
 
 export const formatMatchScore = (score: number): string => {
   if (score <= 1.0) {
@@ -69,9 +75,9 @@ export const JobDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Link to="/dashboard/jobs" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium inline-block">
-          ← Back to Jobs
+      <div className="space-y-4 max-w-5xl mx-auto">
+        <Link to="/dashboard/jobs" className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono text-xs font-medium inline-block">
+          &larr; Back to Jobs
         </Link>
         <div className="flex justify-center items-center h-64">
           <Spinner />
@@ -82,12 +88,12 @@ export const JobDetailPage: React.FC = () => {
 
   if (error || !job) {
     return (
-      <div className="space-y-4">
-        <Link to="/dashboard/jobs" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium inline-block">
-          ← Back to Jobs
+      <div className="space-y-4 max-w-5xl mx-auto">
+        <Link to="/dashboard/jobs" className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono text-xs font-medium inline-block">
+          &larr; Back to Jobs
         </Link>
-        <div className="bg-red-50 p-4 rounded-md border border-red-200">
-          <p className="text-red-700 font-medium">{error || 'Job not found'}</p>
+        <div className="rounded-xl border border-red-500/30 bg-red-950/20 p-5 text-center backdrop-blur-sm">
+          <p className="text-red-400 font-semibold text-sm">{error || 'Job not found'}</p>
         </div>
       </div>
     );
@@ -99,33 +105,41 @@ export const JobDetailPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <Link to="/dashboard/jobs" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium inline-block">
-          ← Back to Jobs
+        <Link to="/dashboard/jobs" className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono text-xs font-medium inline-block">
+          &larr; Back to Jobs
         </Link>
       </div>
 
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 pb-2 border-b border-gray-100">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 pb-4 border-b border-slate-800/80">
         <div className="space-y-2">
-          <span className="text-sm font-semibold uppercase tracking-wider text-indigo-600 block">
-            {company ? company.name : 'Unknown Company'}
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 break-words">{job.title}</h1>
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-cyan-400" />
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cyan-400 block">
+              {company ? company.name : 'Unknown Company'}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white break-words font-sans">
+            {job.title}
+          </h1>
           
-          <div className="flex flex-wrap gap-x-3 gap-y-1 items-center text-sm text-gray-500">
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 items-center text-xs font-mono text-slate-400">
             {job.location && (
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-slate-200 flex items-center gap-1">
+                <MapPin className="h-3 w-3 text-slate-500" />
                 {job.location}
               </span>
             )}
             {job.job_type && (
               <>
                 <span>&bull;</span>
-                <span>{job.job_type}</span>
+                <span className="text-slate-300">{job.job_type}</span>
               </>
             )}
             <span>&bull;</span>
-            <Badge variant="outline" className="text-xs">{job.source}</Badge>
+            <Badge variant="outline" className="text-[11px] bg-slate-950 border-slate-800 text-slate-300">
+              {job.source}
+            </Badge>
             
             {postedDate && (
               <>
@@ -140,7 +154,7 @@ export const JobDetailPage: React.FC = () => {
             {!job.is_active && (
               <>
                 <span>&bull;</span>
-                <Badge variant="error">Inactive</Badge>
+                <Badge variant="error" className="text-[11px]">Inactive</Badge>
               </>
             )}
           </div>
@@ -154,7 +168,13 @@ export const JobDetailPage: React.FC = () => {
               rel="noopener noreferrer"
               className="inline-block w-full sm:w-auto"
             >
-              <Button size="lg" className="w-full sm:w-auto">Apply External</Button>
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20"
+              >
+                Apply External
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
             </a>
           ) : job.source_url ? (
             <a 
@@ -163,22 +183,25 @@ export const JobDetailPage: React.FC = () => {
               rel="noopener noreferrer"
               className="inline-block w-full sm:w-auto"
             >
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">View Source</Button>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-800 text-slate-300 hover:text-white">
+                View Source
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
             </a>
           ) : null}
         </div>
       </div>
 
       {/* Match Context Section */}
-      <Card className="border-indigo-100 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-sm">
-        <CardHeader className="pb-3 border-b border-indigo-50">
+      <Card className="border-cyan-500/30 bg-slate-900/80 shadow-lg">
+        <CardHeader className="pb-3 border-b border-slate-800/80">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
               Why this job matched
             </CardTitle>
             {job.matches && job.matches.length > 0 && (
-              <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-mono font-medium text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
                 {job.matches.length} {job.matches.length === 1 ? 'Matched Profile' : 'Matched Profiles'}
               </span>
             )}
@@ -186,25 +209,25 @@ export const JobDetailPage: React.FC = () => {
         </CardHeader>
         <CardContent className="pt-4">
           {(!job.matches || job.matches.length === 0) ? (
-            <div className="text-sm text-gray-500 py-3 text-center sm:text-left bg-white/60 p-4 rounded-md border border-gray-100">
+            <div className="text-xs font-mono text-slate-400 py-4 text-center sm:text-left bg-slate-950/40 p-4 rounded-xl border border-slate-800">
               No match information is available for this job.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {job.matches.map(m => (
-                <div key={m.id} className="p-4 rounded-lg bg-white border border-gray-200/80 shadow-xs space-y-3">
+                <div key={m.id} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-3">
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="font-semibold text-gray-900 text-base">
+                    <span className="font-semibold text-white text-sm font-sans">
                       {m.profile_name}
                     </span>
-                    <Badge variant="success" className="font-semibold text-xs">
+                    <span className="font-mono font-bold text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
                       {formatMatchScore(m.score)} Match
-                    </Badge>
+                    </span>
                   </div>
                   
                   {m.match_reason && (
-                    <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md border border-gray-100 space-y-2">
-                      <p className="font-medium text-gray-800 leading-relaxed">
+                    <div className="text-xs font-mono text-slate-300 bg-slate-900/60 p-3 rounded-lg border border-slate-800/80 space-y-1">
+                      <p className="leading-relaxed">
                         {m.match_reason}
                       </p>
                     </div>
@@ -218,13 +241,16 @@ export const JobDetailPage: React.FC = () => {
 
       {/* Full Job Description */}
       {job.description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Job Description</CardTitle>
+        <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+          <CardHeader className="border-b border-slate-800/60 pb-3">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-cyan-400" />
+              <CardTitle className="text-base font-semibold text-white">Job Description</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {/* Treat external career site description as untrusted text. No dangerouslySetInnerHTML */}
-            <div className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed break-words">
+            <div className="whitespace-pre-wrap text-sm text-slate-300 font-sans leading-relaxed break-words bg-slate-950/40 p-5 rounded-xl border border-slate-800/60">
               {job.description}
             </div>
           </CardContent>
@@ -240,10 +266,18 @@ export const JobDetailPage: React.FC = () => {
             rel="noopener noreferrer"
             className="w-full sm:w-auto"
           >
-            <Button size="lg" className="w-full sm:w-auto">Apply on {company?.name || 'Company Site'}</Button>
+            <Button
+              size="lg"
+              className="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20"
+            >
+              Apply on {company?.name || 'Company Site'}
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </Button>
           </a>
         </div>
       )}
     </div>
   );
 };
+
+export default JobDetailPage;

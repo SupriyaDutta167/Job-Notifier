@@ -3,9 +3,13 @@ import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { User } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
 import { Spinner } from '../components/ui/Spinner';
 import { Button } from '../components/ui/Button';
+import { 
+  Send, 
+  User as UserIcon, 
+  AlertCircle
+} from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
@@ -80,7 +84,7 @@ export const SettingsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Spinner className="h-8 w-8 text-blue-600" />
+        <Spinner className="h-8 w-8 text-cyan-400" />
       </div>
     );
   }
@@ -88,51 +92,83 @@ export const SettingsPage: React.FC = () => {
   const isTelegramConfigured = Boolean(profile?.telegram_chat_id && profile.telegram_chat_id.trim());
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500">Manage your account and preferences</p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="pb-2 border-b border-slate-800/60">
+        <div className="flex items-center gap-2">
+          <span className="flex h-2 w-2 rounded-full bg-cyan-400" />
+          <span className="text-[11px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
+            System Preferences
+          </span>
+        </div>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl font-sans">Settings</h1>
+        <p className="mt-1 text-xs sm:text-sm text-slate-400">Manage your account and preferences</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Details</CardTitle>
-          <CardDescription>Your personal account information.</CardDescription>
+      {/* Account Details Card */}
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="border-b border-slate-800/60 pb-4">
+          <div className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-base font-semibold text-white">Account Details</CardTitle>
+          </div>
+          <CardDescription className="text-xs font-mono text-slate-400">
+            Your personal account information.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <span className="block text-sm font-medium text-gray-700">Email</span>
-            <span className="block text-sm text-gray-900 mt-1">{profile?.email || user?.email}</span>
+        <CardContent className="pt-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
+              <span className="block text-slate-500 uppercase">Email</span>
+              <span className="block text-white font-semibold mt-1">{profile?.email || user?.email}</span>
+            </div>
+            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
+              <span className="block text-slate-500 uppercase">JWT Verification Leeway</span>
+              <span className="block text-emerald-400 font-semibold mt-1">60s Clock Skew Active</span>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      {/* Telegram Notifications Card */}
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="border-b border-slate-800/60 pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Telegram Notifications</CardTitle>
-              <CardDescription>Configure Telegram alerts for matching job postings.</CardDescription>
+              <div className="flex items-center gap-2">
+                <Send className="h-4 w-4 text-cyan-400" />
+                <CardTitle className="text-base font-semibold text-white">Telegram Notifications</CardTitle>
+              </div>
+              <CardDescription className="text-xs font-mono text-slate-400 mt-1">
+                Configure Telegram alerts for matching job postings.
+              </CardDescription>
             </div>
             <div>
               {isTelegramConfigured ? (
-                <Badge variant="success">Configured</Badge>
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-400">
+                  Configured
+                </span>
               ) : (
-                <Badge variant="warning">Not Configured</Badge>
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold bg-amber-950/60 border border-amber-500/40 text-amber-400">
+                  Not Configured
+                </span>
               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-5 space-y-4">
           {!isTelegramConfigured && (
-            <div className="p-3 rounded-md bg-amber-50 border border-amber-200 text-sm text-amber-800">
-              Configure your Telegram Chat ID to receive Telegram job alerts.
+            <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs font-mono text-amber-300 flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                Configure your Telegram Chat ID to receive Telegram job alerts.
+              </div>
             </div>
           )}
 
           <form onSubmit={handleTelegramSubmit} className="space-y-4 max-w-md">
-            <div>
-              <label htmlFor="telegramChatId" className="block text-sm font-medium text-gray-700">
+            <div className="space-y-1.5">
+              <label htmlFor="telegramChatId" className="block text-xs font-mono text-slate-300">
                 Telegram Chat ID
               </label>
               <input 
@@ -141,30 +177,32 @@ export const SettingsPage: React.FC = () => {
                 value={telegramChatId} 
                 onChange={e => setTelegramChatId(e.target.value)}
                 placeholder="e.g. 123456789"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2 border"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-[11px] font-mono text-slate-500">
                 Enter your numeric Telegram Chat ID or group chat ID to receive instant alerts.
               </p>
             </div>
 
             {telegramError && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-xs font-mono text-red-300">
                 {telegramError}
               </div>
             )}
 
             {telegramSuccess && (
-              <div className="p-3 rounded-md bg-green-50 border border-green-200 text-sm text-green-700">
+              <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs font-mono text-emerald-300">
                 {telegramSuccess}
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Button 
                 type="submit" 
                 disabled={isSavingTelegram}
                 isLoading={isSavingTelegram}
+                size="sm"
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold shadow-md shadow-cyan-500/20"
               >
                 {isSavingTelegram ? 'Saving...' : 'Save Chat ID'}
               </Button>
@@ -172,9 +210,11 @@ export const SettingsPage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={handleTestTelegram}
                 disabled={!isTelegramConfigured || isTestingTelegram}
                 isLoading={isTestingTelegram}
+                className="border-slate-800 text-slate-300 hover:text-white"
               >
                 {isTestingTelegram ? 'Sending test message...' : 'Test Telegram'}
               </Button>
@@ -184,10 +224,10 @@ export const SettingsPage: React.FC = () => {
           {/* Test Telegram Result */}
           {testResult && (
             <div
-              className={`max-w-md p-3 rounded-md text-sm ${
+              className={`max-w-md p-3.5 rounded-xl text-xs font-mono border ${
                 testResult.type === 'success'
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
+                  ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+                  : 'bg-red-950/40 text-red-300 border-red-500/30'
               }`}
             >
               {testResult.message}
@@ -198,3 +238,5 @@ export const SettingsPage: React.FC = () => {
     </div>
   );
 };
+
+export default SettingsPage;

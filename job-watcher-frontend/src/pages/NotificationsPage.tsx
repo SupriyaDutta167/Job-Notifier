@@ -8,6 +8,7 @@ import { Spinner } from '../components/ui/Spinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import { Bell } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
@@ -183,11 +184,23 @@ export const NotificationsPage: React.FC = () => {
   const renderStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case 'sent':
-        return <Badge variant="success" className="gap-1">✓ Sent</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold bg-emerald-950/60 border border-emerald-500/40 text-emerald-400">
+            ✓ Sent
+          </span>
+        );
       case 'failed':
-        return <Badge variant="error" className="gap-1">✕ Failed</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold bg-red-950/60 border border-red-500/40 text-red-400">
+            ✕ Failed
+          </span>
+        );
       case 'pending':
-        return <Badge variant="warning" className="gap-1">⏳ Pending</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold bg-amber-950/60 border border-amber-500/40 text-amber-400">
+            ⏳ Pending
+          </span>
+        );
       default:
         return <Badge variant="default">{status}</Badge>;
     }
@@ -196,7 +209,7 @@ export const NotificationsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center" data-testid="notifications-loading">
-        <Spinner className="h-8 w-8 text-blue-600" />
+        <Spinner className="h-8 w-8 text-cyan-400" />
       </div>
     );
   }
@@ -204,30 +217,40 @@ export const NotificationsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-slate-800/60 gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Notifications</h1>
-          <p className="text-sm text-gray-500">Track your job alerts and Telegram delivery status.</p>
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-cyan-400" />
+            <span className="text-[11px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
+              Telemetry Dispatch
+            </span>
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl font-sans">
+            Notifications
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-400">
+            Track your job alerts and Telegram delivery status.
+          </p>
         </div>
       </div>
 
       {/* Telegram Configuration Notice if missing */}
       {currentUser && !currentUser.telegram_chat_id && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="p-4 bg-amber-950/30 border border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className="text-amber-600 text-lg">⚠️</span>
+            <span className="text-amber-400 text-lg">⚠️</span>
             <div>
-              <p className="text-sm font-medium text-amber-900">Telegram Chat ID Not Configured</p>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-sm font-semibold text-amber-200">Telegram Chat ID Not Configured</p>
+              <p className="text-xs text-amber-400/80 mt-0.5 font-mono">
                 Configure your Telegram Chat ID to receive Telegram job alerts.
               </p>
             </div>
           </div>
           <Link
             to="/dashboard/settings"
-            className="inline-flex items-center justify-center rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 whitespace-nowrap"
+            className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-amber-400 whitespace-nowrap transition-colors"
           >
-            Configure in Settings →
+            Configure in Settings &rarr;
           </Link>
         </div>
       )}
@@ -236,7 +259,7 @@ export const NotificationsPage: React.FC = () => {
       {error && <ErrorMessage message={error} />}
 
       {/* Filters Toolbar */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-3">
+      <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 shadow-lg space-y-3 backdrop-blur-sm">
         <div className="flex flex-col md:flex-row gap-3">
           {/* Search Input */}
           <div className="flex-1">
@@ -248,7 +271,7 @@ export const NotificationsPage: React.FC = () => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full"
+              className="w-full bg-slate-950 border-slate-800 text-white placeholder-slate-500"
             />
           </div>
 
@@ -261,12 +284,12 @@ export const NotificationsPage: React.FC = () => {
                 setStatusFilter(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3 border bg-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
             >
-              <option value="all">All Statuses</option>
-              <option value="sent">Sent</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
+              <option value="all" className="bg-slate-900 text-white">All Statuses</option>
+              <option value="sent" className="bg-slate-900 text-white">Sent</option>
+              <option value="pending" className="bg-slate-900 text-white">Pending</option>
+              <option value="failed" className="bg-slate-900 text-white">Failed</option>
             </select>
           </div>
 
@@ -279,16 +302,16 @@ export const NotificationsPage: React.FC = () => {
                 setChannelFilter(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3 border bg-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 text-slate-100 px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
             >
-              <option value="all">All Channels</option>
-              <option value="telegram">Telegram</option>
+              <option value="all" className="bg-slate-900 text-white">All Channels</option>
+              <option value="telegram" className="bg-slate-900 text-white">Telegram</option>
             </select>
           </div>
         </div>
 
         {/* Secondary Filter Row */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-100">
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/80 font-mono text-xs">
           {/* Company Filter */}
           {availableCompanies.length > 0 && (
             <div className="w-full sm:w-auto">
@@ -299,11 +322,11 @@ export const NotificationsPage: React.FC = () => {
                   setCompanyFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs py-1.5 px-3 border bg-white"
+                className="rounded-lg border border-slate-800 bg-slate-950 text-slate-200 px-2.5 py-1 text-xs focus:outline-none focus:border-cyan-500"
               >
-                <option value="all">All Companies</option>
+                <option value="all" className="bg-slate-900 text-white">All Companies</option>
                 {availableCompanies.map(c => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c} className="bg-slate-900 text-white">{c}</option>
                 ))}
               </select>
             </div>
@@ -319,11 +342,11 @@ export const NotificationsPage: React.FC = () => {
                   setProfileFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs py-1.5 px-3 border bg-white"
+                className="rounded-lg border border-slate-800 bg-slate-950 text-slate-200 px-2.5 py-1 text-xs focus:outline-none focus:border-cyan-500"
               >
-                <option value="all">All Profiles</option>
+                <option value="all" className="bg-slate-900 text-white">All Profiles</option>
                 {availableProfiles.map(p => (
-                  <option key={p} value={p}>{p}</option>
+                  <option key={p} value={p} className="bg-slate-900 text-white">{p}</option>
                 ))}
               </select>
             </div>
@@ -338,10 +361,10 @@ export const NotificationsPage: React.FC = () => {
                 setSortBy(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs py-1.5 px-3 border bg-white"
+              className="rounded-lg border border-slate-800 bg-slate-950 text-slate-200 px-2.5 py-1 text-xs focus:outline-none focus:border-cyan-500"
             >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
+              <option value="newest" className="bg-slate-900 text-white">Newest first</option>
+              <option value="oldest" className="bg-slate-900 text-white">Oldest first</option>
             </select>
           </div>
 
@@ -351,14 +374,14 @@ export const NotificationsPage: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleClearFilters}
-              className="text-xs py-1 px-2.5 h-auto text-gray-600"
+              className="text-xs py-1 px-2.5 h-auto border-slate-800 text-slate-300 hover:text-white"
             >
               Clear filters
             </Button>
           )}
 
-          <div className="ml-auto text-xs text-gray-500">
-            Showing {filteredNotifications.length} of {notifications.length} notifications
+          <div className="ml-auto text-xs font-mono text-slate-400">
+            Showing <span className="text-cyan-400 font-bold">{filteredNotifications.length}</span> of <span className="text-white font-bold">{notifications.length}</span> notifications
           </div>
         </div>
       </div>
@@ -366,10 +389,10 @@ export const NotificationsPage: React.FC = () => {
       {/* Global feedback banner for retrying */}
       {retryFeedback && (
         <div
-          className={`p-3 rounded-md text-sm ${
+          className={`p-3 rounded-xl text-xs font-mono border ${
             retryFeedback.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+              ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+              : 'bg-red-950/40 text-red-300 border-red-500/30'
           }`}
         >
           {retryFeedback.message}
@@ -379,33 +402,33 @@ export const NotificationsPage: React.FC = () => {
       {/* List / Empty States */}
       {notifications.length === 0 ? (
         /* Empty state: No notifications at all */
-        <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-2xl mb-4">
-            🔔
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900/40 border border-slate-800 rounded-xl">
+          <div className="h-12 w-12 rounded-xl bg-slate-800 flex items-center justify-center text-cyan-400 text-2xl mb-4 border border-slate-700">
+            <Bell className="h-6 w-6" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900">No notifications yet</h3>
-          <p className="mt-1 text-sm text-gray-500 max-w-sm">
+          <h3 className="text-base font-semibold text-white">No notifications yet</h3>
+          <p className="mt-1 text-xs text-slate-400 max-w-sm font-mono">
             Notifications will appear after matching jobs are detected and delivered.
           </p>
           <Link
             to="/dashboard/jobs"
-            className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+            className="mt-4 inline-flex items-center text-xs font-mono font-medium text-cyan-400 hover:text-cyan-300"
           >
-            Browse matching jobs →
+            Browse matching jobs &rarr;
           </Link>
         </div>
       ) : filteredNotifications.length === 0 ? (
         /* Empty state: Filters yielded zero results */
-        <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-gray-200 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium text-gray-900">No notifications match your current filters</h3>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900/40 border border-slate-800 rounded-xl">
+          <h3 className="text-base font-semibold text-white">No notifications match your current filters</h3>
+          <p className="mt-1 text-xs text-slate-400 font-mono">
             Try adjusting your search keywords, status filter, or company selection.
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={handleClearFilters}
-            className="mt-4"
+            className="mt-4 border-slate-800 text-slate-300 hover:text-white"
           >
             Clear filters
           </Button>
@@ -420,34 +443,34 @@ export const NotificationsPage: React.FC = () => {
             return (
               <Card
                 key={notification.id}
-                className="hover:border-blue-300 transition-colors shadow-sm cursor-pointer"
+                className="border-slate-800/80 bg-slate-900/70 hover:border-slate-700/90 transition-all duration-200 cursor-pointer group"
                 onClick={() => setSelectedNotification(notification)}
               >
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="space-y-1.5 flex-1 min-w-0">
                       {/* Company & Profile Tags */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                        <span className="font-semibold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded">
                           {notification.company_name || 'Unknown Company'}
                         </span>
                         {notification.watch_profile_name && (
-                          <span className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="text-slate-300 bg-slate-950/60 border border-slate-800 px-2 py-0.5 rounded">
                             Profile: {notification.watch_profile_name}
                           </span>
                         )}
-                        <span className="text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded capitalize">
+                        <span className="text-sky-400 bg-sky-950/40 border border-sky-500/20 px-2 py-0.5 rounded capitalize">
                           {notification.channel}
                         </span>
                       </div>
 
                       {/* Job Title */}
-                      <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors break-words">
+                      <h3 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors break-words font-sans">
                         {notification.job_title || 'Job Posting'}
                       </h3>
 
                       {/* Timestamps */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-slate-400">
                         {notification.status === 'sent' && notification.sent_at ? (
                           <span>Sent: {formatDate(notification.sent_at)}</span>
                         ) : (
@@ -457,8 +480,8 @@ export const NotificationsPage: React.FC = () => {
 
                       {/* Failure message preview if failed */}
                       {notification.status === 'failed' && notification.error_message && (
-                        <div className="mt-2 text-xs text-red-700 bg-red-50 p-2 rounded border border-red-100 break-words">
-                          <span className="font-semibold">Failure reason: </span>
+                        <div className="mt-2 text-xs font-mono text-red-300 bg-red-950/40 p-2.5 rounded-lg border border-red-500/30 break-words">
+                          <span className="font-semibold text-red-200">Failure reason: </span>
                           {notification.error_message}
                         </div>
                       )}
@@ -466,7 +489,7 @@ export const NotificationsPage: React.FC = () => {
 
                     {/* Status badge & Action buttons */}
                     <div
-                      className="flex flex-row sm:flex-col items-end sm:items-end justify-between sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100"
+                      className="flex flex-row sm:flex-col items-end sm:items-end justify-between sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800"
                       onClick={e => e.stopPropagation()}
                     >
                       <div>{renderStatusBadge(notification.status)}</div>
@@ -476,7 +499,7 @@ export const NotificationsPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-xs py-1 px-2.5 h-auto"
+                            className="text-xs py-1 px-2.5 h-auto border-red-500/30 text-red-300 hover:bg-red-950/40"
                             onClick={e => handleRetry(notification.id, e)}
                             isLoading={isRetrying}
                             disabled={isRetrying}
@@ -489,7 +512,7 @@ export const NotificationsPage: React.FC = () => {
                             href={targetUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                            className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-2.5 py-1 text-xs font-semibold text-slate-950 hover:bg-cyan-400 shadow-sm"
                           >
                             Apply ↗
                           </a>
@@ -497,7 +520,7 @@ export const NotificationsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-xs py-1 px-2 h-auto text-blue-600"
+                          className="text-xs py-1 px-2 h-auto text-cyan-400 hover:text-cyan-300 hover:bg-slate-800"
                           onClick={() => setSelectedNotification(notification)}
                         >
                           Details
@@ -514,10 +537,10 @@ export const NotificationsPage: React.FC = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 rounded-lg sm:px-6 shadow-sm">
-          <div className="text-sm text-gray-700">
-            Page <span className="font-medium">{currentPage}</span> of{' '}
-            <span className="font-medium">{totalPages}</span>
+        <div className="flex items-center justify-between border border-slate-800 bg-slate-900/80 px-4 py-3 rounded-xl sm:px-6 shadow-sm font-mono text-xs">
+          <div className="text-slate-400">
+            Page <span className="text-cyan-400 font-bold">{currentPage}</span> of{' '}
+            <span className="text-white font-bold">{totalPages}</span>
           </div>
           <div className="flex gap-2">
             <Button
@@ -525,6 +548,7 @@ export const NotificationsPage: React.FC = () => {
               size="sm"
               onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
+              className="border-slate-800 text-slate-300 hover:text-white text-xs"
             >
               Previous
             </Button>
@@ -533,6 +557,7 @@ export const NotificationsPage: React.FC = () => {
               size="sm"
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
+              className="border-slate-800 text-slate-300 hover:text-white text-xs"
             >
               Next
             </Button>
@@ -543,29 +568,29 @@ export const NotificationsPage: React.FC = () => {
       {/* Detail Modal */}
       {selectedNotification && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setSelectedNotification(null)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6"
+            className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6"
             onClick={e => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby="notification-modal-title"
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b pb-4">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cyan-400">
                   {selectedNotification.company_name || 'Unknown Company'}
                 </span>
-                <h2 id="notification-modal-title" className="text-xl font-bold text-gray-900 mt-0.5">
+                <h2 id="notification-modal-title" className="text-xl font-bold text-white mt-0.5 font-sans">
                   {selectedNotification.job_title || 'Job Posting'}
                 </h2>
               </div>
               <button
                 onClick={() => setSelectedNotification(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl font-semibold leading-none p-1"
+                className="rounded-lg p-1 text-slate-400 hover:text-white hover:bg-slate-800 text-lg leading-none transition-colors"
                 aria-label="Close modal"
               >
                 ✕
@@ -574,40 +599,40 @@ export const NotificationsPage: React.FC = () => {
 
             {/* Modal Content */}
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
                 {renderStatusBadge(selectedNotification.status)}
-                <span className="text-xs bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded capitalize">
+                <span className="bg-slate-950 border border-slate-800 text-slate-300 px-2.5 py-0.5 rounded capitalize">
                   Channel: {selectedNotification.channel}
                 </span>
                 {selectedNotification.watch_profile_name && (
-                  <span className="text-xs bg-blue-50 text-blue-800 px-2.5 py-0.5 rounded">
+                  <span className="bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 px-2.5 py-0.5 rounded">
                     Profile: {selectedNotification.watch_profile_name}
                   </span>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
                 <div>
-                  <span className="text-gray-500 font-medium">Created Time:</span>
-                  <p className="text-gray-900 mt-0.5">{formatDate(selectedNotification.created_at)}</p>
+                  <span className="text-slate-500 block">Created Time:</span>
+                  <p className="text-slate-200 mt-0.5">{formatDate(selectedNotification.created_at)}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500 font-medium">Sent Time:</span>
-                  <p className="text-gray-900 mt-0.5">{formatDate(selectedNotification.sent_at)}</p>
+                  <span className="text-slate-500 block">Sent Time:</span>
+                  <p className="text-slate-200 mt-0.5">{formatDate(selectedNotification.sent_at)}</p>
                 </div>
                 {selectedNotification.recipient && (
                   <div>
-                    <span className="text-gray-500 font-medium">Recipient Destination:</span>
-                    <p className="text-gray-900 mt-0.5 font-mono">{selectedNotification.recipient}</p>
+                    <span className="text-slate-500 block">Recipient Destination:</span>
+                    <p className="text-cyan-400 mt-0.5">{selectedNotification.recipient}</p>
                   </div>
                 )}
               </div>
 
               {/* Failure message if failed */}
               {selectedNotification.status === 'failed' && selectedNotification.error_message && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
-                  <span className="font-semibold text-red-800 block mb-1">✕ Failure Reason</span>
-                  <p className="text-red-700 font-mono text-xs break-words">
+                <div className="bg-red-950/40 border border-red-500/30 rounded-xl p-3 text-xs font-mono">
+                  <span className="font-semibold text-red-200 block mb-1">✕ Failure Reason</span>
+                  <p className="text-red-300 break-words">
                     {selectedNotification.error_message}
                   </p>
                 </div>
@@ -615,15 +640,15 @@ export const NotificationsPage: React.FC = () => {
 
               {/* Match Reason Context */}
               {(selectedNotification.match_reason || selectedNotification.match_score !== undefined) && (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm">
-                  <span className="font-semibold text-blue-900 block mb-1">Why this job matched</span>
+                <div className="bg-slate-950/80 border border-cyan-500/30 rounded-xl p-4 text-xs font-mono space-y-1.5">
+                  <span className="font-semibold text-cyan-300 block text-sm">Why this job matched</span>
                   {selectedNotification.match_score !== undefined && selectedNotification.match_score !== null && (
-                    <p className="text-xs text-blue-700 mb-1">
-                      Confidence Score: <span className="font-bold">{Math.round(selectedNotification.match_score * 100)}%</span>
+                    <p className="text-slate-300">
+                      Confidence Score: <span className="font-bold text-emerald-400">{Math.round(selectedNotification.match_score * 100)}%</span>
                     </p>
                   )}
                   {selectedNotification.match_reason && (
-                    <p className="text-xs text-blue-800 whitespace-pre-wrap">
+                    <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">
                       {selectedNotification.match_reason}
                     </p>
                   )}
@@ -633,8 +658,8 @@ export const NotificationsPage: React.FC = () => {
               {/* Alert Content Preview */}
               {selectedNotification.message && (
                 <div>
-                  <span className="text-xs font-medium text-gray-500 uppercase block mb-1">Message Preview</span>
-                  <div className="bg-gray-900 text-gray-100 p-3 rounded font-mono text-xs whitespace-pre-wrap max-h-48 overflow-y-auto">
+                  <span className="text-xs font-mono text-slate-400 uppercase block mb-1">Message Preview</span>
+                  <div className="bg-slate-950 border border-slate-800 text-slate-200 p-3 rounded-xl font-mono text-xs whitespace-pre-wrap max-h-48 overflow-y-auto">
                     {selectedNotification.message}
                   </div>
                 </div>
@@ -642,12 +667,12 @@ export const NotificationsPage: React.FC = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between border-t pt-4">
+            <div className="flex items-center justify-between border-t border-slate-800 pt-4 font-mono text-xs">
               <Link
                 to={`/dashboard/notifications/${selectedNotification.id}`}
-                className="text-xs font-medium text-blue-600 hover:text-blue-800"
+                className="text-cyan-400 hover:text-cyan-300"
               >
-                Open Full Detail Page →
+                Open Full Detail Page &rarr;
               </Link>
               <div className="flex items-center gap-2">
                 {selectedNotification.status === 'failed' && (
@@ -657,6 +682,7 @@ export const NotificationsPage: React.FC = () => {
                     onClick={() => handleRetry(selectedNotification.id)}
                     isLoading={retryingId === selectedNotification.id}
                     disabled={retryingId === selectedNotification.id}
+                    className="border-red-500/30 text-red-300 hover:bg-red-950/40"
                   >
                     Retry Delivery
                   </Button>
@@ -666,7 +692,7 @@ export const NotificationsPage: React.FC = () => {
                     href={selectedNotification.apply_url || selectedNotification.source_url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                    className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-cyan-400"
                   >
                     Apply / View Job ↗
                   </a>
@@ -679,3 +705,5 @@ export const NotificationsPage: React.FC = () => {
     </div>
   );
 };
+
+export default NotificationsPage;

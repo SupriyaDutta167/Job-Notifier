@@ -11,6 +11,16 @@ import { api, ApiError } from '../lib/api';
 import { WatchProfile, WatchRule, WatchProfileCompany, Company } from '../types';
 import { TagInput } from '../components/ui/TagInput';
 import { AddCompanyModal } from '../components/ui/AddCompanyModal';
+import { 
+  ArrowLeft, 
+  Building2, 
+  Sliders, 
+  Trash2, 
+  Plus, 
+  Save, 
+  Target,
+  FileCheck
+} from 'lucide-react';
 
 export const WatchProfileDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -170,14 +180,21 @@ export const WatchProfileDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex h-64 items-center justify-center"><Spinner className="h-8 w-8 text-blue-600" /></div>;
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Spinner className="h-8 w-8 text-cyan-400" />
+      </div>
+    );
   }
 
   if (error === 'Watch profile not found') {
     return (
-      <div className="space-y-4 text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">Watch profile not found</h2>
-        <Button onClick={() => navigate('/dashboard/watch-profiles')}>Return to Profiles</Button>
+      <div className="space-y-4 text-center py-16">
+        <h2 className="text-xl font-semibold text-white">Watch profile not found</h2>
+        <p className="text-xs text-slate-400 font-mono">The requested profile identifier does not exist or has been removed.</p>
+        <Button onClick={() => navigate('/dashboard/watch-profiles')} variant="outline">
+          Return to Profiles
+        </Button>
       </div>
     );
   }
@@ -188,27 +205,48 @@ export const WatchProfileDetailPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-slate-800/60">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
-            {profile.name}
-            <Badge variant={profile.is_active ? 'success' : 'default'}>
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-cyan-400" />
+            <span className="text-[11px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
+              Profile Configuration
+            </span>
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl font-sans flex items-center gap-3">
+            <span>{profile.name}</span>
+            <Badge variant={profile.is_active ? 'success' : 'default'} className="font-mono text-xs">
               {profile.is_active ? 'Active' : 'Paused'}
             </Badge>
           </h1>
-          <p className="text-sm text-gray-500">Configure your job monitoring requirements</p>
+          <p className="mt-1 text-xs sm:text-sm text-slate-400">
+            Configure your job monitoring requirements
+          </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/dashboard/watch-profiles')}>Back</Button>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/dashboard/watch-profiles')}
+          className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800"
+          size="sm"
+        >
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          Back
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Details</CardTitle>
+      {/* Profile Details Card */}
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="border-b border-slate-800/60 pb-4">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-base font-semibold text-white">Profile Details</CardTitle>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-5 space-y-4">
           <div className="grid grid-cols-1 gap-4 max-w-md">
             <div className="space-y-2">
-              <Label htmlFor="name">Profile Name</Label>
+              <Label htmlFor="name" className="text-slate-200 text-xs font-mono">Profile Name</Label>
               <Input
                 id="name"
                 value={profileName}
@@ -216,50 +254,80 @@ export const WatchProfileDetailPage: React.FC = () => {
                 placeholder="e.g. India SDE Internships"
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
               <input
                 type="checkbox"
                 id="is_active"
                 checked={profileActive}
                 onChange={(e) => setProfileActive(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-950 cursor-pointer"
               />
-              <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+              <Label htmlFor="is_active" className="cursor-pointer text-xs font-mono text-slate-300">
+                Active
+              </Label>
             </div>
             <div>
-              <Button onClick={handleSaveProfile} isLoading={isSavingProfile}>Save Profile</Button>
+              <Button onClick={handleSaveProfile} isLoading={isSavingProfile} size="sm">
+                <Save className="mr-1.5 h-3.5 w-3.5" />
+                Save Profile
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Monitored Companies</CardTitle>
-          <Button size="sm" onClick={() => setIsCompanyModalOpen(true)}>+ Add Company</Button>
+      {/* Monitored Companies Card */}
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/60 pb-4">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-base font-semibold text-white">Monitored Companies</CardTitle>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setIsCompanyModalOpen(true)}
+            className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20 text-xs"
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            + Add Company
+          </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           {companies.length === 0 ? (
-            <p className="text-sm text-gray-500 py-4 text-center border rounded border-dashed">
-              No companies added yet. Add a company to monitor its career page.
-            </p>
+            <div className="py-8 text-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40">
+              <Building2 className="mx-auto h-8 w-8 text-slate-600 mb-2" />
+              <p className="text-xs font-mono text-slate-400">
+                No companies added yet. Add a company to monitor its career page.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {companies.map(company => (
-                <div key={company.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50">
+                <div
+                  key={company.id}
+                  className="flex justify-between items-center p-3 rounded-xl border border-slate-800/80 bg-slate-950/60 hover:border-slate-700/80 transition-all"
+                >
                   <div className="truncate pr-4">
-                    <p className="font-medium text-sm text-gray-900 truncate">
+                    <p className="font-medium text-sm text-white truncate flex items-center gap-2">
                       {allCompanies[company.company_id]?.name && (
-                        <span className="font-semibold text-gray-900 mr-2">
+                        <span className="font-semibold text-cyan-300 font-mono">
                           {allCompanies[company.company_id].name}
                         </span>
                       )}
-                      <span className="text-gray-500 text-xs truncate" title={company.career_url}>
+                      <span className="text-slate-500 text-xs font-mono truncate" title={company.career_url}>
                         {company.career_url}
                       </span>
                     </p>
                   </div>
-                  <Button variant="danger" size="sm" onClick={() => handleRemoveCompany(company.id)}>Remove</Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleRemoveCompany(company.id)}
+                    className="text-xs"
+                  >
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    Remove
+                  </Button>
                 </div>
               ))}
             </div>
@@ -267,14 +335,29 @@ export const WatchProfileDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Matching Rules</CardTitle>
-          {rule && <Button variant="danger" size="sm" onClick={handleDeleteRule} isLoading={isDeletingRule}>Delete Rules</Button>}
+      {/* Matching Rules Card */}
+      <Card className="border-slate-800/80 bg-slate-900/70 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/60 pb-4">
+          <div className="flex items-center gap-2">
+            <Sliders className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-base font-semibold text-white">Matching Rules</CardTitle>
+          </div>
+          {rule && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDeleteRule}
+              isLoading={isDeletingRule}
+              className="text-xs"
+            >
+              <Trash2 className="mr-1 h-3 w-3" />
+              Delete Rules
+            </Button>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-5 space-y-5">
           <div className="space-y-2 max-w-md">
-            <Label htmlFor="jobType">Job Type</Label>
+            <Label htmlFor="jobType" className="text-slate-200 text-xs font-mono">Job Type</Label>
             <Input
               id="jobType"
               value={jobType}
@@ -284,27 +367,35 @@ export const WatchProfileDetailPage: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Label>Roles (e.g. SDE, SWE, Software Engineer)</Label>
+            <Label className="text-slate-200 text-xs font-mono">Roles (e.g. SDE, SWE, Software Engineer)</Label>
             <TagInput tags={roleKeywords} onChange={setRoleKeywords} placeholder="Type role and press Enter" />
           </div>
 
           <div className="space-y-2">
-            <Label>Locations (e.g. India, Remote, Bengaluru)</Label>
+            <Label className="text-slate-200 text-xs font-mono">Locations (e.g. India, Remote, Bengaluru)</Label>
             <TagInput tags={locationKeywords} onChange={setLocationKeywords} placeholder="Type location and press Enter" />
           </div>
 
           <div className="space-y-2">
-            <Label>Include Keywords (e.g. Backend, Cloud)</Label>
+            <Label className="text-slate-200 text-xs font-mono">Include Keywords (e.g. Backend, Cloud)</Label>
             <TagInput tags={includeKeywords} onChange={setIncludeKeywords} placeholder="Must have keywords" />
           </div>
 
           <div className="space-y-2">
-            <Label>Exclude Keywords (e.g. Senior, Manager)</Label>
+            <Label className="text-slate-200 text-xs font-mono">Exclude Keywords (e.g. Senior, Manager)</Label>
             <TagInput tags={excludeKeywords} onChange={setExcludeKeywords} placeholder="Must NOT have keywords" />
           </div>
 
-          <div className="pt-2">
-            <Button onClick={handleSaveRule} isLoading={isSavingRule}>Save Rules</Button>
+          <div className="pt-3 border-t border-slate-800/60 flex justify-end">
+            <Button
+              onClick={handleSaveRule}
+              isLoading={isSavingRule}
+              size="sm"
+              className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20"
+            >
+              <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+              Save Rules
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -318,3 +409,5 @@ export const WatchProfileDetailPage: React.FC = () => {
     </div>
   );
 };
+
+export default WatchProfileDetailPage;
