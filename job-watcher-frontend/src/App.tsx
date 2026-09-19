@@ -11,6 +11,9 @@ import { WatchProfileDetailPage } from './pages/WatchProfileDetailPage';
 import { JobsPage } from './pages/JobsPage';
 import { JobDetailPage } from './pages/JobDetailPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { NotificationDetailPage } from './pages/NotificationDetailPage';
+import { ScansPage } from './pages/ScansPage';
+import { ScanDetailPage } from './pages/ScanDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 function App() {
@@ -37,6 +40,9 @@ function App() {
             <Route path="jobs" element={<JobsPage />} />
             <Route path="jobs/:id" element={<JobDetailPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="notifications/:id" element={<NotificationDetailPage />} />
+            <Route path="scans" element={<ScansPage />} />
+            <Route path="scans/:id" element={<ScanDetailPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 

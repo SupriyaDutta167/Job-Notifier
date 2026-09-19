@@ -14,6 +14,10 @@ class ForbiddenError(JobWatcherException):
     """Raised when a user is not authorized to perform an action."""
     pass
 
+class BadRequestError(JobWatcherException):
+    """Raised when an operation is invalid or violates business rules."""
+    pass
+
 class UnauthorizedError(JobWatcherException):
     """Raised when authentication fails."""
     def __init__(self, detail: str = "Unauthorized"):

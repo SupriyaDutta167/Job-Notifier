@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Bell, Settings, Briefcase, Search, LogOut } from 'lucide-react';
+import { LayoutDashboard, Bell, Settings, Briefcase, Search, LogOut, Activity } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { cn } from '../lib/utils';
 import { Button } from '../components/ui/Button';
@@ -19,6 +19,7 @@ export const DashboardLayout: React.FC = () => {
     { name: 'Watch Profiles', path: '/dashboard/watch-profiles', icon: Search },
     { name: 'Jobs', path: '/dashboard/jobs', icon: Briefcase },
     { name: 'Notifications', path: '/dashboard/notifications', icon: Bell },
+    { name: 'Scans', path: '/dashboard/scans', icon: Activity },
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
   ];
 

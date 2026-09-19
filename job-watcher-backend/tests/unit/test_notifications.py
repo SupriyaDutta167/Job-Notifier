@@ -30,6 +30,24 @@ def test_message_builder_complete():
     assert "https://apply.com" in msg
     assert "Source:\ngreenhouse" in msg
 
+def test_message_builder_with_profile():
+    from app.db.models.watch_profile import WatchProfile
+    job = Job(
+        title="SDE Intern",
+        location="India",
+        job_type="Internship",
+        source="greenhouse",
+        apply_url="https://apply.com"
+    )
+    company = Company(name="NVIDIA")
+    job_match = JobMatch(match_reason="Matched internship keywords")
+    profile = WatchProfile(name="SDE Internship")
+
+    msg = build_job_match_message(job, company, job_match, profile=profile)
+    assert "Profile: SDE Internship" in msg
+    assert "Company: NVIDIA" in msg
+    assert "Role: SDE Intern" in msg
+
 def test_message_builder_missing_fields():
     job = Job(
         title="Software Engineer",
