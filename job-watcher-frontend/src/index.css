@@ -69,3 +69,21 @@
   border-color: rgba(56, 189, 248, 0.35);
   background: rgba(30, 41, 59, 0.5);
 }
+
+/* Accessibility: Consistent focus-visible ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid rgb(6, 182, 212);
+  outline-offset: 2px;
+}
+
+/* Accessibility: Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

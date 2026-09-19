@@ -206,8 +206,11 @@ export const DashboardPage: React.FC = () => {
               <span className="text-sky-400 font-medium">Telegram Bot API</span>
             </div>
             <div className="bg-slate-950/40 border border-slate-800/40 p-2 rounded-lg">
-              <span className="text-[10px] text-slate-500 block uppercase">Execution Leeway</span>
-              <span className="text-slate-300 font-medium">JWT 60s Verified</span>
+              <span className="text-[10px] text-slate-500 block uppercase">System Status</span>
+              <span className="text-emerald-400 font-medium flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
+                Operational
+              </span>
             </div>
           </div>
         </div>

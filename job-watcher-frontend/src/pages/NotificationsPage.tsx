@@ -59,6 +59,17 @@ export const NotificationsPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!selectedNotification) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedNotification(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNotification]);
+
   const handleRetry = async (notificationId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     try {

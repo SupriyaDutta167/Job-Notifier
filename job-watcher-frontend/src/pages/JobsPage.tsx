@@ -275,7 +275,7 @@ export const JobsPage: React.FC = () => {
             
             <div>
               <select
-                className="w-full flex h-10 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
+                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
                 value={selectedCompanyId}
                 onChange={e => setSelectedCompanyId(e.target.value)}
                 aria-label="Filter by company"
@@ -289,7 +289,7 @@ export const JobsPage: React.FC = () => {
 
             <div>
               <select
-                className="w-full flex h-10 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
+                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
                 value={selectedLocation}
                 onChange={e => setSelectedLocation(e.target.value)}
                 aria-label="Filter by location"
@@ -303,7 +303,7 @@ export const JobsPage: React.FC = () => {
 
             <div>
               <select
-                className="w-full flex h-10 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
+                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50"
                 value={selectedJobType}
                 onChange={e => setSelectedJobType(e.target.value)}
                 aria-label="Filter by job type"

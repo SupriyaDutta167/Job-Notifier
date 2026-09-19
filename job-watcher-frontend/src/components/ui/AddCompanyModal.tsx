@@ -39,6 +39,17 @@ export const AddCompanyModal: React.FC<AddCompanyModalProps> = ({ isOpen, onClos
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const loadCompanies = async () => {
     try {
       setLoading(true);
@@ -138,16 +149,26 @@ export const AddCompanyModal: React.FC<AddCompanyModalProps> = ({ isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md border-slate-800 bg-slate-900 shadow-2xl">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <Card 
+        className="w-full max-w-md border-slate-800 bg-slate-900 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-company-title"
+      >
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-cyan-400" />
-            <CardTitle className="text-base font-semibold text-white">Add Monitored Company</CardTitle>
+            <CardTitle id="add-company-title" className="text-base font-semibold text-white">Add Monitored Company</CardTitle>
           </div>
           <button
             onClick={onClose}
             className="rounded-lg p-1 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            aria-label="Close modal"
           >
             <X className="h-4 w-4" />
           </button>

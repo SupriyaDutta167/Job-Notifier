@@ -123,8 +123,11 @@ export const SettingsPage: React.FC = () => {
               <span className="block text-white font-semibold mt-1">{profile?.email || user?.email}</span>
             </div>
             <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/60">
-              <span className="block text-slate-500 uppercase">JWT Verification Leeway</span>
-              <span className="block text-emerald-400 font-semibold mt-1">60s Clock Skew Active</span>
+              <span className="block text-slate-500 uppercase">Session Security</span>
+              <span className="text-emerald-400 font-semibold mt-1 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                Active &amp; Protected
+              </span>
             </div>
           </div>
         </CardContent>

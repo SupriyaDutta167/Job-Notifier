@@ -50,6 +50,8 @@ export const WatchProfileDetailPage: React.FC = () => {
   const [excludeKeywords, setExcludeKeywords] = useState<string[]>([]);
   const [isSavingRule, setIsSavingRule] = useState(false);
   const [isDeletingRule, setIsDeletingRule] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [ruleFeedback, setRuleFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const loadData = async () => {
     if (!id) return;
@@ -107,16 +109,19 @@ export const WatchProfileDetailPage: React.FC = () => {
     if (!profile) return;
     try {
       setIsSavingProfile(true);
+      setProfileFeedback(null);
       const data = await api.patch<WatchProfile>(`/api/v1/watch-profiles/${profile.id}`, {
         name: profileName,
         is_active: profileActive
       });
       setProfile(data);
-      alert('Profile details saved successfully.');
+      setProfileFeedback({ type: 'success', message: 'Profile details saved successfully.' });
+      setTimeout(() => setProfileFeedback(null), 4000);
     } catch (err) {
-      if (err instanceof ApiError) {
-        alert(err.message);
-      }
+      setProfileFeedback({
+        type: 'error',
+        message: err instanceof ApiError ? err.message : 'Failed to save profile details.'
+      });
     } finally {
       setIsSavingProfile(false);
     }
@@ -137,6 +142,7 @@ export const WatchProfileDetailPage: React.FC = () => {
     if (!profile) return;
     try {
       setIsSavingRule(true);
+      setRuleFeedback(null);
       const payload = {
         job_type: jobType || null,
         role_keywords: roleKeywords,
@@ -152,9 +158,13 @@ export const WatchProfileDetailPage: React.FC = () => {
         const createdRule = await api.post<WatchRule>(`/api/v1/watch-profiles/${profile.id}/rules`, payload);
         setRule(createdRule);
       }
-      alert('Matching rules saved successfully.');
+      setRuleFeedback({ type: 'success', message: 'Matching rules saved successfully.' });
+      setTimeout(() => setRuleFeedback(null), 4000);
     } catch (err) {
-      if (err instanceof ApiError) alert(err.message);
+      setRuleFeedback({
+        type: 'error',
+        message: err instanceof ApiError ? err.message : 'Failed to save matching rules.'
+      });
     } finally {
       setIsSavingRule(false);
     }
@@ -266,11 +276,16 @@ export const WatchProfileDetailPage: React.FC = () => {
                 Active
               </Label>
             </div>
-            <div>
+            <div className="flex items-center gap-3">
               <Button onClick={handleSaveProfile} isLoading={isSavingProfile} size="sm">
                 <Save className="mr-1.5 h-3.5 w-3.5" />
                 Save Profile
               </Button>
+              {profileFeedback && (
+                <span className={`text-xs font-mono font-semibold ${profileFeedback.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {profileFeedback.type === 'success' ? '✓ ' : '✕ '}{profileFeedback.message}
+                </span>
+              )}
             </div>
           </div>
         </CardContent>
@@ -386,7 +401,14 @@ export const WatchProfileDetailPage: React.FC = () => {
             <TagInput tags={excludeKeywords} onChange={setExcludeKeywords} placeholder="Must NOT have keywords" />
           </div>
 
-          <div className="pt-3 border-t border-slate-800/60 flex justify-end">
+          <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              {ruleFeedback && (
+                <span className={`text-xs font-mono font-semibold ${ruleFeedback.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {ruleFeedback.type === 'success' ? '✓ ' : '✕ '}{ruleFeedback.message}
+                </span>
+              )}
+            </div>
             <Button
               onClick={handleSaveRule}
               isLoading={isSavingRule}
