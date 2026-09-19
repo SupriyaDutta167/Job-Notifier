@@ -2,6 +2,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from app.db.models.job import Job
 from app.db.models.watch_profile import WatchProfile
 from app.db.models.watch_rule import WatchRule
@@ -50,6 +51,9 @@ class MatchService:
             job_match.score = result.score
             job_match.match_reason = result.match_reason
             job_match.matched_at = now
+            db.commit()
+            db.refresh(job_match)
+            return job_match
         else:
             job_match = JobMatch(
                 job_id=job_id,
@@ -60,8 +64,25 @@ class MatchService:
                 matched_at=now
             )
             db.add(job_match)
-            
-        db.commit()
-        db.refresh(job_match)
-        
-        return job_match
+            try:
+                db.commit()
+                db.refresh(job_match)
+                return job_match
+            except IntegrityError:
+                # Concurrent evaluation occurred
+                db.rollback()
+                existing_match = db.execute(
+                    select(JobMatch).where(
+                        (JobMatch.job_id == job_id) & 
+                        (JobMatch.watch_profile_id == watch_profile_id)
+                    )
+                ).scalars().first()
+                if existing_match:
+                    existing_match.matched = result.matched
+                    existing_match.score = result.score
+                    existing_match.match_reason = result.match_reason
+                    existing_match.matched_at = now
+                    db.commit()
+                    db.refresh(existing_match)
+                    return existing_match
+                raise

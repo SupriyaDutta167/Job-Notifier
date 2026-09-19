@@ -86,11 +86,20 @@ class BrowserRenderer:
                     return RenderedPageResult(success=False, error=f"Browser error: {str(e)}")
                 finally:
                     if page:
-                        page.close()
+                        try:
+                            page.close()
+                        except Exception as close_err:
+                            logger.debug(f"Error closing Playwright page: {close_err}")
                     if context:
-                        context.close()
+                        try:
+                            context.close()
+                        except Exception as close_err:
+                            logger.debug(f"Error closing Playwright context: {close_err}")
                     if browser:
-                        browser.close()
+                        try:
+                            browser.close()
+                        except Exception as close_err:
+                            logger.debug(f"Error closing Playwright browser: {close_err}")
                     logger.info("playwright_fallback_completed: Cleanup done")
         except Exception as e:
             logger.exception("playwright_fallback_failed: Unexpected error")

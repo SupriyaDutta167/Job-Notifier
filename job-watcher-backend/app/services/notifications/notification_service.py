@@ -3,6 +3,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_
+from sqlalchemy.exc import IntegrityError
 
 from app.db.models.notification import Notification
 from app.db.models.job_match import JobMatch
@@ -134,13 +135,30 @@ class NotificationService:
                 recipient=chat_id
             )
             db.add(notification)
+            try:
+                db.commit()
+                db.refresh(notification)
+            except IntegrityError:
+                # Concurrent worker created notification row
+                db.rollback()
+                existing_notification = db.execute(
+                    select(Notification).where(
+                        (Notification.user_id == user.id) &
+                        (Notification.job_id == job.id) &
+                        (Notification.watch_profile_id == profile.id) &
+                        (Notification.channel == "telegram")
+                    )
+                ).scalars().first()
+                if existing_notification and existing_notification.status == "sent":
+                    logger.info(f"Notification already sent by concurrent worker for User {user.id}, Job {job.id}. Skipping.")
+                    return existing_notification
+                notification = existing_notification
         else:
             notification = existing_notification
             notification.status = "pending"
             notification.error_message = None
-            
-        db.commit()
-        db.refresh(notification)
+            db.commit()
+            db.refresh(notification)
         
         # 7. Build message
         message = build_job_match_message(job, company, job_match, profile=profile)

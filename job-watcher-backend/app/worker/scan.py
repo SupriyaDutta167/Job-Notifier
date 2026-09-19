@@ -29,6 +29,7 @@ def run():
         fatal_errors = 0
         partial_errors = 0
         success = 0
+        skipped_already_running = 0
         
         total_discovered = 0
         total_new = 0
@@ -36,6 +37,11 @@ def run():
         total_notifications = 0
         
         for res in results:
+            if res.status == "already_running":
+                skipped_already_running += 1
+                logger.warning(f"worker_scan_skipped_already_running: scan_id={res.scan_id}")
+                continue
+
             total_discovered += res.jobs_discovered
             total_new += res.jobs_new
             total_matches += res.jobs_matched
@@ -48,7 +54,7 @@ def run():
             else:
                 success += 1
                 
-        logger.info(f"Scan Completed. Profiles: {len(results)}. Success: {success}, Partial: {partial_errors}, Failed: {fatal_errors}")
+        logger.info(f"Scan Completed. Profiles: {len(results)}. Success: {success}, Partial: {partial_errors}, Failed: {fatal_errors}, Skipped (Already Running): {skipped_already_running}")
         logger.info(f"Aggregated Stats - Discovered: {total_discovered}, New: {total_new}, Matches: {total_matches}, Notifications: {total_notifications}")
         
         if fatal_errors > 0:
