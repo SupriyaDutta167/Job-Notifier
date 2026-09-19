@@ -247,30 +247,104 @@ class GenericHtmlAdapter(BaseAdapter):
         seen_urls = set()
         base_parsed = urlparse(base_url)
         
-        # Heuristic 1: Find <a> tags that look like jobs
-        # Reject false positives
-        false_positive_texts = {
+        # Disallowed path patterns: editorial, marketing, navigation, legal, auth, category directories
+        disallowed_path_patterns = [
+            r"/content/",
+            r"/blog/",
+            r"/news/",
+            r"/press/",
+            r"/events/",
+            r"/categories",
+            r"/category",
+            r"/job[-_]categories",
+            r"/business[-_]categories",
+            r"/locations",
+            r"/teams",
+            r"/programs",
+            r"/career[-_]programs",
+            r"/students?",
+            r"/military",
+            r"/diversity",
+            r"/inclusion",
+            r"/benefits",
+            r"/how[-_]we[-_]hire",
+            r"/how[-_]we[-_]work",
+            r"/interview",
+            r"/accommodations",
+            r"/privacy",
+            r"/terms",
+            r"/cookie",
+            r"/eeo",
+            r"/legal",
+            r"/compliance",
+            r"/applicant",
+            r"/dashboard",
+            r"/saved",
+            r"/alerts",
+            r"/recommendations",
+            r"/settings",
+            r"/preferences",
+            r"/profile",
+            r"/account",
+            r"/login",
+            r"/logout",
+            r"/signin",
+            r"/signup",
+            r"\.(?:pdf|png|jpg|svg|docx?)$"
+        ]
+        disallowed_path_regex = re.compile("|".join(disallowed_path_patterns), re.I)
+
+        non_job_segments = {
+            "cloud", "youtube", "ai", "search", "results", "saved", "alerts", 
+            "recommendations", "dashboard", "teams", "locations", "categories", 
+            "category", "students", "military", "benefits", "privacy", "privacy-policy", 
+            "terms", "eeo", "help", "overview", "all", "browse", "how-we-work", 
+            "how-we-hire", "faq", "press", "news", "blog", "events", "culture", "diversity", 
+            "navigation", "details", "apply"
+        }
+
+        false_positive_titles = {
             "home", "about", "about us", "contact", "contact us", "privacy policy", 
             "terms", "terms of service", "terms of use", "blog", "news", "press", 
             "apply now", "learn more", "careers", "jobs", "read more", "view details",
-            "log in", "login", "sign in", "sign up", "register", "view all jobs",
-            "view all", "see all jobs", "all open positions", "all open roles"
+            "view job", "details", "back to top", "next", "previous",
+            "log in", "login", "sign in", "sign up", "register", "sign out", "logout",
+            "view all jobs", "view all", "see all jobs", "all open positions", "all open roles",
+            "search", "job search", "saved jobs", "job alerts", "recommended jobs",
+            "job categories", "military careers", "teams", "locations", "accommodations",
+            "benefits", "inclusive experiences", "how we hire", "how we work",
+            "google's eeo policy", "equal opportunity", "related information",
+            "applicant & candidate privacy", "my applications", "my profile", "account security",
+            "settings", "help", "google apps", "search sidebar", "sort by", "more about us",
+            "departments", "explore jobs", "our culture", "life at amazon", "life at google"
         }
-        
-        job_url_paths = {"/job", "/jobs", "/career", "/careers", "/opening", "/openings", "/position", "/positions", "/vacancy", "/vacancies", "/role", "/roles"}
-        
+
+        role_noun_regex = re.compile(
+            r"\b(engineer|developer|manager|analyst|architect|scientist|lead|director|designer|"
+            r"specialist|technician|associate|consultant|recruiter|coordinator|intern|officer|"
+            r"writer|representative|strategist|partner|administrator|expert|buyer|teller|"
+            r"counsel|paralegal|operator|driver|instructor|assistant)\b",
+            re.I
+        )
+
+        def clean_title_str(raw: str) -> str:
+            raw = re.sub(r'^[a-z_]{4,}(?:[a-z_]{4,})*', '', raw)
+            raw = re.sub(r"^(?:learn more about|view|apply for)\s+", "", raw, flags=re.I)
+            raw = re.sub(r'\s*open_in_new\s*$', '', raw, flags=re.I)
+            raw = re.sub(r'\.{2,}\s*read more.*$', '', raw, flags=re.I)
+            return raw.strip()
+
+        def is_ligature_dup(text: str) -> bool:
+            n = len(text)
+            if n >= 6 and n % 2 == 0:
+                half = n // 2
+                if text[:half].lower() == text[half:].lower():
+                    return True
+            return False
+
         for a in soup.find_all("a", href=True):
-            href = a["href"]
-            text = a.get_text(strip=True)
-            
-            if not text or len(text) < 3 or len(text) > 100:
-                continue
-                
-            if text.lower() in false_positive_texts:
-                continue
-                
-            # Filter non-http schemas
-            if href.startswith(("javascript:", "mailto:", "tel:", "#")):
+            href = a["href"].strip()
+            if not href or href.startswith(("javascript:", "mailto:", "tel:", "#")):
                 continue
                 
             abs_url = urljoin(base_url, href)
@@ -280,39 +354,155 @@ class GenericHtmlAdapter(BaseAdapter):
             if parsed_url.hostname and parsed_url.hostname != base_parsed.hostname:
                 continue
                 
-            # Check if URL path looks like a job or text looks like a job
             path_lower = parsed_url.path.lower()
-            looks_like_job_url = any(p in path_lower for p in job_url_paths)
             
-            # Basic sanity on text (titles usually have spaces, capitalized words, etc)
-            looks_like_title = " " in text and not text.islower()
+            # Check disallowed patterns
+            if disallowed_path_regex.search(path_lower):
+                continue
+                
+            # Reject index / root search paths
+            if path_lower.rstrip("/").endswith(("/jobs", "/careers", "/results", "/search", "/teams", "/locations", "/students", "/dashboard", "/departments")):
+                if not parsed_url.query:
+                    continue
+
+            # Identify if path looks like a job posting
+            m_path = re.search(r"/(?:jobs?/|career[s]?/|posting[s]?/|positions?/|openings?/|roles?/|vacanc(?:y|ies)/|results/)(.+)$", path_lower)
+            has_job_query = any(q in parsed_url.query.lower() for q in ["jobid=", "jid=", "id=", "req_id=", "postingid=", "position="])
             
-            # Need to be conservative. If it doesn't look like a job URL, 
-            # we need stronger evidence (e.g., location present).
+            segments = []
+            if m_path:
+                tail = m_path.group(1).strip("/")
+                segments = [s for s in tail.split("/") if s]
+
+            if not segments and not has_job_query:
+                continue
+
+            if segments:
+                first_seg = segments[0]
+                if first_seg in non_job_segments:
+                    if len(segments) > 1:
+                        child_seg = segments[1]
+                        if child_seg in non_job_segments:
+                            continue
+                        first_seg = child_seg
+                    else:
+                        continue
+                        
+                last_seg = segments[-1]
+                if last_seg in non_job_segments:
+                    continue
+
+            # Check if enclosed in explicit job card container
+            parent_card = a.find_parent(lambda tag: tag.name in ["li", "article", "div", "section", "tr"] and any(
+                cls in " ".join(tag.get("class", [])).lower() 
+                for cls in ["job-card", "job_card", "job-tile", "job-item", "job-listing", "job-row", "job-result", "smn82b"]
+            ))
+
+            # Must have an ID/slug with hyphens or digits, OR be inside an explicit job container
+            has_id_or_slug = any(
+                ("-" in s or any(c.isdigit() for c in s)) and len(s) >= 3 and s not in non_job_segments
+                for s in segments
+            )
             
-            if not looks_like_title:
+            # Allow clean path segment if inside a verified job card container
+            if not (has_id_or_slug or has_job_query or parent_card):
+                # Also check if segments has a distinct slug and location is present
+                if not (segments and len(segments[0]) >= 4 and segments[0] not in non_job_segments):
+                    continue
+
+            # Determine title: <a> text, aria-label, or card heading
+            text = a.get_text(strip=True)
+            aria_label = a.get("aria-label", "").strip()
+            title = None
+            
+            if text and len(text) >= 3:
+                title = clean_title_str(text)
+                
+            if (not title or title.lower() in false_positive_titles or is_ligature_dup(title)) and aria_label:
+                title = clean_title_str(aria_label)
+                
+            if not title or title.lower() in false_positive_titles or is_ligature_dup(title):
+                # Look for headings or explicit title elements in card container
+                parent_scope = parent_card or a.find_parent(["li", "article", "div", "section"])
+                if parent_scope:
+                    for h in parent_scope.find_all(["h1", "h2", "h3", "h4", "span", "div", "p"]):
+                        is_heading = h.name in ["h1", "h2", "h3", "h4"]
+                        has_title_class = any("title" in c.lower() for c in h.get("class", []))
+                        if is_heading or has_title_class:
+                            h_text = clean_title_str(h.get_text(strip=True))
+                            if h_text and h_text.lower() not in false_positive_titles and not is_ligature_dup(h_text) and len(h_text) >= 4:
+                                title = h_text
+                                break
+                            
+            if not title or title.lower() in false_positive_titles or is_ligature_dup(title):
+                continue
+                
+            title_lower = title.lower()
+            if any(nav in title_lower for nav in ["navigation", "link", "go to next", "previous page", "next page", "opens in a new tab", "privacy policy", "terms of use"]):
+                continue
+                
+            if title_lower in {"google", "amazon", "nvidia", "meta", "apple", "microsoft", "ai at google", "google cloud", "youtube"}:
+                continue
+                
+            has_role = bool(role_noun_regex.search(title))
+            has_words = len(title.split()) >= 2 and len(title) >= 8
+            if not (has_role or has_words or parent_card):
                 continue
                 
             if abs_url in seen_urls:
                 continue
                 
+            # Extract location
             location = None
-            parent = a.find_parent(["div", "li", "tr", "article", "section"])
-            if parent:
-                loc_span = parent.find(class_=re.compile("location", re.I))
-                if loc_span:
-                    location = loc_span.get_text(strip=True)
-                    
-            # Stricter requirement: Must either look like a job URL path,
-            # or it must have a clearly identified location nearby.
-            if not looks_like_job_url and not location:
-                continue
-                
+            parent_scope = parent_card or a.find_parent(["li", "article", "div", "section"])
+            if parent_scope:
+                loc_el = parent_scope.find(lambda t: (
+                    t.name in ["posting-locations"] or 
+                    any("location" in c.lower() or "place" in c.lower() or "job-info-value" in c.lower() for c in t.get("class", []))
+                ) and len(t.get_text(strip=True)) > 2)
+                if loc_el:
+                    location = loc_el.get_text(strip=True)
+                else:
+                    # Look for Material Design place icon
+                    loc_icon = parent_scope.find(lambda t: t.name in ["i", "span"] and t.get_text(strip=True) == "place")
+                    if loc_icon and loc_icon.parent:
+                        loc_val = loc_icon.parent.get_text(" ", strip=True).replace("place", "").strip()
+                        if loc_val:
+                            location = loc_val
+                    else:
+                        p_text = parent_scope.get_text(" | ", strip=True)
+                        m_loc = re.search(r"Locations?:?\s*\|?\s*([^|\n]+?)(?=\||Job ID|$)", p_text, re.I)
+                        if m_loc:
+                            location = m_loc.group(1).strip()
+                            
+            if location:
+                location = re.sub(r"^Locations?:?\s*", "", location, flags=re.I)
+                location = re.sub(r"\|?\s*Job ID:?.*$", "", location, flags=re.I).strip()
+                location = re.sub(r"\+\d+\s+other locations?.*$", "", location, flags=re.I).strip()
+                location = re.sub(r"and\s*\d+\s*more.*$", "", location, flags=re.I).strip()
+                if not location:
+                    location = None
+                            
+            # Extract external_id
+            external_id = None
+            if segments:
+                for s in segments:
+                    m_id = re.search(r"(\d{5,})", s)
+                    if m_id:
+                        external_id = m_id.group(1)
+                        break
+            if not external_id and parsed_url.query:
+                for q_param in ["jobid", "jid", "id", "req_id", "postingid"]:
+                    m_q = re.search(rf"{q_param}=([^&]+)", parsed_url.query, re.I)
+                    if m_q:
+                        external_id = m_q.group(1)
+                        break
+
             try:
                 job = DiscoveredJob(
                     source=self.source_name,
-                    external_id=None,
-                    title=text,
+                    external_id=external_id,
+                    title=title,
                     description=None,
                     location=location,
                     job_type=None,
@@ -322,8 +512,8 @@ class GenericHtmlAdapter(BaseAdapter):
                 )
                 jobs.append(job)
                 seen_urls.add(abs_url)
-                logger.info(f"generic_html_candidate_found: Heuristic match for {text}")
+                logger.info(f"generic_html_candidate_found: Parsed job '{title}' from {abs_url}")
             except Exception as e:
-                logger.warning(f"generic_html_candidate_rejected: Validation failed: {e}")
-                    
+                logger.warning(f"generic_html_candidate_rejected: Validation failed for {abs_url}: {e}")
+                
         return jobs

@@ -17,14 +17,46 @@ from app.services.jobs.normalization import (
 from app.services.jobs.deduplication import generate_fingerprint
 from app.core.exceptions import NotFoundError, ConflictError
 
-def get_job(db: Session, job_id: UUID) -> Job:
-    job = db.execute(select(Job).where(Job.id == job_id)).scalars().first()
+def get_job(db: Session, job_id: UUID, user_id: UUID | None = None) -> Job:
+    query = select(Job).where(Job.id == job_id)
+    
+    if user_id:
+        monitored_company_ids = (
+            select(WatchProfileCompany.company_id)
+            .join(WatchProfile, WatchProfile.id == WatchProfileCompany.watch_profile_id)
+            .where(
+                WatchProfile.user_id == user_id,
+                WatchProfile.is_active == True,
+                WatchProfileCompany.is_active == True
+            )
+        )
+        query = query.where(Job.company_id.in_(monitored_company_ids))
+        
+    job = db.execute(query).scalars().first()
     if not job:
         raise NotFoundError("Job not found")
     return job
 
-def list_jobs(db: Session, company_id: UUID | None = None, is_active: bool | None = None) -> list[Job]:
+from app.db.models.watch_profile import WatchProfile
+from app.db.models.watch_profile_company import WatchProfileCompany
+
+def list_jobs(db: Session, company_id: UUID | None = None, is_active: bool | None = None, user_id: UUID | None = None) -> list[Job]:
     query = select(Job)
+    
+    if user_id:
+        # Get company IDs monitored by the user's active watch profiles
+        monitored_company_ids = (
+            select(WatchProfileCompany.company_id)
+            .join(WatchProfile, WatchProfile.id == WatchProfileCompany.watch_profile_id)
+            .where(
+                WatchProfile.user_id == user_id,
+                WatchProfile.is_active == True,
+                WatchProfileCompany.is_active == True
+            )
+        )
+        # Scope jobs to only those companies
+        query = query.where(Job.company_id.in_(monitored_company_ids))
+
     if company_id:
         query = query.where(Job.company_id == company_id)
     if is_active is not None:

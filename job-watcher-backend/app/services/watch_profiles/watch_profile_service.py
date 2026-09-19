@@ -1,5 +1,5 @@
 from uuid import UUID
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from app.db.models.watch_profile import WatchProfile
@@ -21,7 +21,9 @@ def create_watch_profile(db: Session, user_id: UUID, data: WatchProfileCreate) -
 
 def get_watch_profile(db: Session, user_id: UUID, profile_id: UUID) -> WatchProfile:
     profile = db.execute(
-        select(WatchProfile).where(WatchProfile.id == profile_id, WatchProfile.user_id == user_id)
+        select(WatchProfile)
+        .options(selectinload(WatchProfile.companies))
+        .where(WatchProfile.id == profile_id, WatchProfile.user_id == user_id)
     ).scalars().first()
     if not profile:
         raise NotFoundError("Watch profile not found or access denied")
@@ -29,7 +31,10 @@ def get_watch_profile(db: Session, user_id: UUID, profile_id: UUID) -> WatchProf
 
 def list_watch_profiles(db: Session, user_id: UUID) -> list[WatchProfile]:
     return list(db.execute(
-        select(WatchProfile).where(WatchProfile.user_id == user_id).order_by(WatchProfile.created_at.desc())
+        select(WatchProfile)
+        .options(selectinload(WatchProfile.companies))
+        .where(WatchProfile.user_id == user_id)
+        .order_by(WatchProfile.created_at.desc())
     ).scalars().all())
 
 def update_watch_profile(db: Session, user_id: UUID, profile_id: UUID, data: WatchProfileUpdate) -> WatchProfile:

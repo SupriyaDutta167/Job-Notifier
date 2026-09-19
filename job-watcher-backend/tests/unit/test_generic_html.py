@@ -225,3 +225,114 @@ def test_http_error(monkeypatch):
     res = adapter.discover_jobs("https://example.com/jobs", uuid.uuid4())
     assert res.success is False
     assert "HTTP error 404" in res.error
+
+def test_navigation_and_content_links_rejected_as_false_positives(monkeypatch):
+    """
+    Ensure common career site navigation, content, category, and policy links
+    (like the ones previously returned for Amazon and Google) are never parsed as jobs.
+    """
+    html = """
+    <html>
+        <body>
+            <!-- Amazon-style false positives -->
+            <a href="/content/en/career-programs/military">Military careers</a>
+            <a href="/content/en/job-categories">Job Categories</a>
+            <a href="/en/job_categories">Job categories</a>
+            <a href="/en/locations">Locations</a>
+            <a href="/en/business_categories">Teams</a>
+            <a href="/content/how-we-hire/accommodations">Accommodations</a>
+
+            <!-- Google-style false positives -->
+            <a href="/about/careers/applications/jobs/cloud?hl=en_US">Google Cloud</a>
+            <a href="/about/careers/applications/jobs/jobs/alerts?hl=en_US">Job alerts</a>
+            <a href="/about/careers/applications/jobs/jobs/results?hl=en_US">Job search</a>
+            <a href="/about/careers/applications/jobs/jobs/recommendations?hl=en_US">Recommended jobs</a>
+            <a href="/about/careers/applications/jobs/ai?hl=en_US">AI at Google</a>
+            <a href="/about/careers/applications/jobs/dashboard?hl=en_US">person_outlineperson_outlineYour careerYour career</a>
+            <a href="/about/careers/applications/jobs/teams?hl=en_US">googlegoogleHow we workHow we work</a>
+            <a href="/about/careers/applications/jobs/jobs/saved?hl=en_US">Saved jobs</a>
+            <a href="/about/careers/applications/jobs/how-we-hire?hl=en_US">handymanhandymanHow we hireHow we hire</a>
+            <a href="/about/careers/applications/eeo">Google's EEO Policy</a>
+            <a href="/about/careers/applications/jobs/privacy-policy">Applicant & Candidate Privacyopen_in_new</a>
+        </body>
+    </html>
+    """
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.iter_bytes.return_value = [html.encode("utf-8")]
+    mock_resp.encoding = "utf-8"
+    mock_resp.url = "https://www.example.com/careers"
+    mock_resp.headers = {"Content-Type": "text/html"}
+    
+    mock_stream = MagicMock()
+    mock_stream.__enter__.return_value = mock_resp
+    mock_client.stream.return_value = mock_stream
+    
+    adapter = GenericHtmlAdapter()
+    monkeypatch.setattr(adapter, "client", mock_client)
+    monkeypatch.setenv("PLAYWRIGHT_ENABLED", "false")
+    
+    res = adapter.discover_jobs("https://www.example.com/careers", uuid.uuid4())
+    assert res.success is True
+    # None of the navigation/content links should be discovered as jobs
+    assert len(res.jobs) == 0
+
+def test_amazon_and_google_style_cards_parsed_correctly(monkeypatch):
+    """
+    Verify real job postings with typical dynamic card structures (Amazon and Google)
+    are properly parsed.
+    """
+    html = """
+    <html>
+        <body>
+            <!-- Amazon-style card -->
+            <div class="job-tile">
+                <h3 class="job-title">
+                    <a href="/en/jobs/10554141/sde-ii-ml-infra">SDE II, ML Infra Services</a>
+                </h3>
+                <div class="info">
+                    <span>LocationsSeattle, WA, USA|Job ID: 10554141</span>
+                </div>
+            </div>
+
+            <!-- Google-style card -->
+            <div class="smn82b">
+                <h3>Program Manager, Regulatory PMO</h3>
+                <div>
+                    <span>place</span>
+                    <span>Mountain View, CA, USA</span>
+                </div>
+                <a href="/jobs/results/89009299044344518-program-manager" aria-label="Learn more about Program Manager, Regulatory PMO"></a>
+            </div>
+        </body>
+    </html>
+    """
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.iter_bytes.return_value = [html.encode("utf-8")]
+    mock_resp.encoding = "utf-8"
+    mock_resp.url = "https://www.example.com/careers"
+    mock_resp.headers = {"Content-Type": "text/html"}
+    
+    mock_stream = MagicMock()
+    mock_stream.__enter__.return_value = mock_resp
+    mock_client.stream.return_value = mock_stream
+    
+    adapter = GenericHtmlAdapter()
+    monkeypatch.setattr(adapter, "client", mock_client)
+    
+    res = adapter.discover_jobs("https://www.example.com/careers", uuid.uuid4())
+    assert res.success is True
+    assert len(res.jobs) == 2
+    
+    jobs_by_title = {j.title: j for j in res.jobs}
+    assert "SDE II, ML Infra Services" in jobs_by_title
+    amz_job = jobs_by_title["SDE II, ML Infra Services"]
+    assert amz_job.location == "Seattle, WA, USA"
+    assert amz_job.external_id == "10554141"
+    
+    assert "Program Manager, Regulatory PMO" in jobs_by_title
+    goog_job = jobs_by_title["Program Manager, Regulatory PMO"]
+    assert "Mountain View, CA, USA" in goog_job.location
+    assert goog_job.external_id == "89009299044344518"
+

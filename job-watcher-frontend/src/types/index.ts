@@ -26,6 +26,7 @@ export interface WatchProfile {
   name: string;
   description?: string;
   is_active: boolean;
+  companies?: WatchProfileCompany[];
   created_at: string;
   updated_at: string;
 }
@@ -55,13 +56,21 @@ export interface WatchRule {
 export interface Job {
   id: string;
   company_id: string;
+  source: string;
+  external_id?: string | null;
+  fingerprint: string;
   title: string;
-  url: string;
-  location?: string;
-  department?: string;
-  is_active: boolean;
+  description?: string | null;
+  location?: string | null;
+  job_type?: string | null;
+  apply_url?: string | null;
+  source_url?: string | null;
+  posted_at?: string | null;
   first_seen_at: string;
   last_seen_at: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface JobMatch {

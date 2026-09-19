@@ -7,6 +7,7 @@ export const Spinner: React.FC<{ className?: string }> = ({ className }) => {
       className={cn('animate-spin h-5 w-5 text-current', className)}
       fill="none"
       viewBox="0 0 24 24"
+      role="status"
     >
       <circle
         className="opacity-25"

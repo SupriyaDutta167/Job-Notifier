@@ -8,7 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { Spinner } from '../components/ui/Spinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { api, ApiError } from '../lib/api';
-import { WatchProfile, WatchRule, WatchProfileCompany } from '../types';
+import { WatchProfile, WatchRule, WatchProfileCompany, Company } from '../types';
 import { TagInput } from '../components/ui/TagInput';
 import { AddCompanyModal } from '../components/ui/AddCompanyModal';
 
@@ -28,6 +28,7 @@ export const WatchProfileDetailPage: React.FC = () => {
 
   // Monitored Companies
   const [companies, setCompanies] = useState<WatchProfileCompany[]>([]);
+  const [allCompanies, setAllCompanies] = useState<Record<string, Company>>({});
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
   // Watch Rule Data
@@ -45,13 +46,14 @@ export const WatchProfileDetailPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const [profileData, companiesData, ruleData] = await Promise.all([
+      const [profileData, companiesData, ruleData, allCompaniesData] = await Promise.all([
         api.get<WatchProfile>(`/api/v1/watch-profiles/${id}`),
         api.get<WatchProfileCompany[]>(`/api/v1/watch-profiles/${id}/companies`).catch(() => []),
         api.get<WatchRule>(`/api/v1/watch-profiles/${id}/rules`).catch((err) => {
           if (err instanceof ApiError && err.status === 404) return null;
           throw err;
-        })
+        }),
+        api.get<Company[]>('/api/v1/companies').catch(() => [])
       ]);
 
       setProfile(profileData);
@@ -59,6 +61,12 @@ export const WatchProfileDetailPage: React.FC = () => {
       setProfileActive(profileData.is_active);
 
       setCompanies(companiesData);
+
+      const compMap: Record<string, Company> = {};
+      allCompaniesData.forEach(c => {
+        compMap[c.id] = c;
+      });
+      setAllCompanies(compMap);
 
       setRule(ruleData);
       if (ruleData) {
@@ -240,7 +248,16 @@ export const WatchProfileDetailPage: React.FC = () => {
               {companies.map(company => (
                 <div key={company.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50">
                   <div className="truncate pr-4">
-                    <p className="font-medium text-sm text-gray-900 truncate" title={company.career_url}>{company.career_url}</p>
+                    <p className="font-medium text-sm text-gray-900 truncate">
+                      {allCompanies[company.company_id]?.name && (
+                        <span className="font-semibold text-gray-900 mr-2">
+                          {allCompanies[company.company_id].name}
+                        </span>
+                      )}
+                      <span className="text-gray-500 text-xs truncate" title={company.career_url}>
+                        {company.career_url}
+                      </span>
+                    </p>
                   </div>
                   <Button variant="danger" size="sm" onClick={() => handleRemoveCompany(company.id)}>Remove</Button>
                 </div>

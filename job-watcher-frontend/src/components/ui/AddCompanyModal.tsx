@@ -81,10 +81,34 @@ export const AddCompanyModal: React.FC<AddCompanyModalProps> = ({ isOpen, onClos
           setIsSubmitting(false);
           return;
         }
-        const createdCompany = await api.post<Company>('/api/v1/companies', {
-          name: newCompanyName.trim()
-        });
-        companyId = createdCompany.id;
+        try {
+          const createdCompany = await api.post<Company>('/api/v1/companies', {
+            name: newCompanyName.trim()
+          });
+          companyId = createdCompany.id;
+        } catch (compErr) {
+          if (compErr instanceof ApiError && compErr.status === 409) {
+            // Company with this name/slug already exists globally; reuse its ID
+            const existing = companies.find(
+              c => c.name.toLowerCase() === newCompanyName.trim().toLowerCase()
+            );
+            if (existing) {
+              companyId = existing.id;
+            } else {
+              const allComps = await api.get<Company[]>('/api/v1/companies');
+              const found = allComps.find(
+                c => c.name.toLowerCase() === newCompanyName.trim().toLowerCase()
+              );
+              if (found) {
+                companyId = found.id;
+              } else {
+                throw compErr;
+              }
+            }
+          } else {
+            throw compErr;
+          }
+        }
       }
 
       await api.post(`/api/v1/watch-profiles/${profileId}/companies`, {

@@ -9,6 +9,7 @@ import { WatchProfilesPage } from './pages/WatchProfilesPage';
 import { WatchProfileCreatePage } from './pages/WatchProfileCreatePage';
 import { WatchProfileDetailPage } from './pages/WatchProfileDetailPage';
 import { JobsPage } from './pages/JobsPage';
+import { JobDetailPage } from './pages/JobDetailPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -34,6 +35,7 @@ function App() {
             <Route path="watch-profiles/new" element={<WatchProfileCreatePage />} />
             <Route path="watch-profiles/:id" element={<WatchProfileDetailPage />} />
             <Route path="jobs" element={<JobsPage />} />
+            <Route path="jobs/:id" element={<JobDetailPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

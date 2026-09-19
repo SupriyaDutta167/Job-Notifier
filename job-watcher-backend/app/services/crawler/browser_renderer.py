@@ -51,8 +51,14 @@ class BrowserRenderer:
                     logger.info("playwright_navigation_completed")
                     
                     # Bounded wait for JS rendering
-                    # We don't use infinite networkidle, just wait a short moment for typical SPA render
-                    page.wait_for_timeout(2000)
+                    # Wait for typical job card/item selectors, falling back to a bounded wait
+                    try:
+                        page.wait_for_selector(
+                            "a[href*='/job/'], a[href*='/jobs/'], a[href*='jobs/results/'], .job-tile, .job-card, .job-grid-item, .job-item",
+                            timeout=8000
+                        )
+                    except Exception:
+                        page.wait_for_timeout(2000)
                     
                     final_url = page.url
                     if not is_safe_url(final_url):
