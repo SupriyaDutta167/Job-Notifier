@@ -71,6 +71,17 @@ export interface Job {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  matches?: JobMatchDetail[];
+}
+
+export interface JobMatchDetail {
+  id: string;
+  watch_profile_id: string;
+  profile_name: string;
+  matched: boolean;
+  score: number;
+  match_reason?: string | null;
+  matched_at: string;
 }
 
 export interface JobMatch {

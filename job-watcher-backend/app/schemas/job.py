@@ -13,6 +13,17 @@ class DiscoveredJob(BaseModel):
     source_url: HttpUrl | None = None
     posted_at: datetime | None = None
 
+class JobMatchDetailResponse(BaseModel):
+    id: UUID
+    watch_profile_id: UUID
+    profile_name: str
+    matched: bool
+    score: float
+    match_reason: str | None = None
+    matched_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class JobResponse(BaseModel):
     id: UUID
     company_id: UUID
@@ -33,3 +44,6 @@ class JobResponse(BaseModel):
     updated_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
+
+class JobDetailResponse(JobResponse):
+    matches: list[JobMatchDetailResponse] = []

@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.schemas.job import JobResponse
+from app.schemas.job import JobResponse, JobDetailResponse
 from app.services.jobs import job_service
 from app.core.exceptions import NotFoundError
 
@@ -20,13 +20,13 @@ def list_jobs(
 ):
     return job_service.list_jobs(db, company_id=company_id, is_active=is_active, user_id=_user.id)
 
-@router.get("/{job_id}", response_model=JobResponse)
+@router.get("/{job_id}", response_model=JobDetailResponse)
 def get_job(
     job_id: UUID, 
     db: Session = Depends(get_db),
     _user: User = Depends(get_current_user)
 ):
     try:
-        return job_service.get_job(db, job_id, user_id=_user.id)
+        return job_service.get_job_detail(db, job_id, user_id=_user.id)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

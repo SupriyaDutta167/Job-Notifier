@@ -86,6 +86,110 @@ describe('JobDetailPage', () => {
     
     const applyBtn = screen.getByText('Apply External').closest('a');
     expect(applyBtn).toHaveAttribute('href', 'https://apply.example.com');
+    expect(applyBtn).toHaveAttribute('target', '_blank');
+    expect(applyBtn).toHaveAttribute('rel', 'noopener noreferrer');
+
+    // No matches in mockJob -> displays no match information
+    expect(screen.getByText('No match information is available for this job.')).toBeInTheDocument();
+  });
+
+  it('renders match section with profile name, score, and match reason', async () => {
+    const jobWithMatch = {
+      ...mockJob,
+      matches: [
+        {
+          id: 'match-1',
+          watch_profile_id: 'prof-1',
+          profile_name: 'SDE Internship',
+          matched: true,
+          score: 0.87,
+          match_reason: "Matched role keyword 'software engineer', location keyword 'Bengaluru'. No excluded terms found.",
+          matched_at: '2026-09-10T12:00:00Z'
+        }
+      ]
+    };
+
+    vi.mocked(api.get).mockImplementation(async (url) => {
+      if (url.includes('/api/v1/jobs/')) return jobWithMatch;
+      if (url.includes('/api/v1/companies/')) return mockCompany;
+      throw new Error('Not found');
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Why this job matched')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('SDE Internship')).toBeInTheDocument();
+    expect(screen.getByText('87% Match')).toBeInTheDocument();
+    expect(screen.getByText(/Matched role keyword 'software engineer'/)).toBeInTheDocument();
+    expect(screen.queryByText('No match information is available for this job.')).not.toBeInTheDocument();
+  });
+
+  it('renders multiple matching profiles correctly', async () => {
+    const jobWithMultipleMatches = {
+      ...mockJob,
+      matches: [
+        {
+          id: 'match-1',
+          watch_profile_id: 'prof-1',
+          profile_name: 'SDE Internship',
+          matched: true,
+          score: 0.87,
+          match_reason: "Matched role keyword 'software engineer', location keyword 'Bengaluru'.",
+          matched_at: '2026-09-10T12:00:00Z'
+        },
+        {
+          id: 'match-2',
+          watch_profile_id: 'prof-2',
+          profile_name: 'Backend Engineer',
+          matched: true,
+          score: 0.72,
+          match_reason: "Matched role keyword 'software engineer'.",
+          matched_at: '2026-09-10T12:00:00Z'
+        }
+      ]
+    };
+
+    vi.mocked(api.get).mockImplementation(async (url) => {
+      if (url.includes('/api/v1/jobs/')) return jobWithMultipleMatches;
+      if (url.includes('/api/v1/companies/')) return mockCompany;
+      throw new Error('Not found');
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Why this job matched')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('2 Matched Profiles')).toBeInTheDocument();
+    expect(screen.getByText('SDE Internship')).toBeInTheDocument();
+    expect(screen.getByText('87% Match')).toBeInTheDocument();
+    expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
+    expect(screen.getByText('72% Match')).toBeInTheDocument();
+  });
+
+  it('renders no match state when matches list is empty', async () => {
+    const jobWithEmptyMatches = {
+      ...mockJob,
+      matches: []
+    };
+
+    vi.mocked(api.get).mockImplementation(async (url) => {
+      if (url.includes('/api/v1/jobs/')) return jobWithEmptyMatches;
+      if (url.includes('/api/v1/companies/')) return mockCompany;
+      throw new Error('Not found');
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Why this job matched')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('No match information is available for this job.')).toBeInTheDocument();
   });
 
   it('displays job description safely', async () => {
@@ -106,7 +210,7 @@ describe('JobDetailPage', () => {
     expect(screen.getByText(/<script>alert\("xss"\)<\/script>/)).toBeInTheDocument();
   });
 
-  it('handles 404 properly', async () => {
+  it('handles 404 properly with back link', async () => {
     vi.mocked(api.get).mockRejectedValue(new ApiError(404, 'Job not found'));
     
     renderComponent();
@@ -114,6 +218,8 @@ describe('JobDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Job not found')).toBeInTheDocument();
     });
+
+    expect(screen.getByText('← Back to Jobs')).toBeInTheDocument();
   });
 
   it('handles standard API error', async () => {

@@ -5,7 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from app.db.models.job import Job
 from app.db.models.company import Company
-from app.schemas.job import DiscoveredJob
+from app.db.models.watch_profile import WatchProfile
+from app.db.models.watch_profile_company import WatchProfileCompany
+from app.db.models.job_match import JobMatch
+from app.schemas.job import DiscoveredJob, JobResponse, JobDetailResponse, JobMatchDetailResponse
 from app.services.jobs.normalization import (
     normalize_title,
     normalize_location,
@@ -37,8 +40,55 @@ def get_job(db: Session, job_id: UUID, user_id: UUID | None = None) -> Job:
         raise NotFoundError("Job not found")
     return job
 
-from app.db.models.watch_profile import WatchProfile
-from app.db.models.watch_profile_company import WatchProfileCompany
+def get_job_detail(db: Session, job_id: UUID, user_id: UUID) -> JobResponse:
+    job = get_job(db, job_id, user_id=user_id)
+    
+    # Query ONLY matches belonging to this authenticated user's watch profiles where matched is True
+    matches_query = (
+        select(JobMatch, WatchProfile.name)
+        .join(WatchProfile, WatchProfile.id == JobMatch.watch_profile_id)
+        .where(
+            JobMatch.job_id == job_id,
+            WatchProfile.user_id == user_id,
+            JobMatch.matched == True
+        )
+        .order_by(JobMatch.score.desc())
+    )
+    results = db.execute(matches_query).all()
+    
+    match_details = [
+        JobMatchDetailResponse(
+            id=m.id,
+            watch_profile_id=m.watch_profile_id,
+            profile_name=profile_name,
+            matched=m.matched,
+            score=m.score,
+            match_reason=m.match_reason,
+            matched_at=m.matched_at
+        )
+        for m, profile_name in results
+    ]
+    
+    return JobDetailResponse(
+        id=job.id,
+        company_id=job.company_id,
+        source=job.source,
+        external_id=job.external_id,
+        fingerprint=job.fingerprint,
+        title=job.title,
+        description=job.description,
+        location=job.location,
+        job_type=job.job_type,
+        apply_url=job.apply_url,
+        source_url=job.source_url,
+        posted_at=job.posted_at,
+        first_seen_at=job.first_seen_at,
+        last_seen_at=job.last_seen_at,
+        is_active=job.is_active,
+        created_at=job.created_at,
+        updated_at=job.updated_at,
+        matches=match_details
+    )
 
 def list_jobs(db: Session, company_id: UUID | None = None, is_active: bool | None = None, user_id: UUID | None = None) -> list[Job]:
     query = select(Job)
