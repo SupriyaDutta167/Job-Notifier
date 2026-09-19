@@ -3,7 +3,7 @@ import jwt
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 import json
 from app.core.exceptions import UnauthorizedError
@@ -136,3 +136,43 @@ def test_unsupported_algorithm():
     token = jwt.encode(payload, "symmetric-secret", algorithm="HS256", headers={"kid": KID})
     with pytest.raises(UnauthorizedError, match="Invalid token signature"):
         verify_token(token)
+
+def test_verify_token_with_acceptable_clock_skew():
+    # Token issued 10 seconds in the future (within 60s leeway)
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(uuid.uuid4()),
+        "aud": "authenticated",
+        "exp": now + timedelta(hours=1),
+        "iat": int((now + timedelta(seconds=10)).timestamp())
+    }
+    token = create_token(PRIVATE_KEY, payload)
+    decoded = verify_token(token)
+    assert decoded["sub"] == payload["sub"]
+
+def test_verify_token_significantly_in_future_fails():
+    # Token issued 10 minutes in the future (exceeds 60s leeway)
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(uuid.uuid4()),
+        "aud": "authenticated",
+        "exp": now + timedelta(hours=1),
+        "iat": int((now + timedelta(minutes=10)).timestamp())
+    }
+    token = create_token(PRIVATE_KEY, payload)
+    with pytest.raises(UnauthorizedError, match="Token is not yet valid"):
+        verify_token(token)
+
+def test_verify_expired_beyond_leeway_fails():
+    # Token expired 10 minutes ago (exceeds 60s leeway)
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(uuid.uuid4()),
+        "aud": "authenticated",
+        "exp": now - timedelta(minutes=10),
+        "iat": int((now - timedelta(hours=1)).timestamp())
+    }
+    token = create_token(PRIVATE_KEY, payload)
+    with pytest.raises(UnauthorizedError, match="Token has expired"):
+        verify_token(token)
+

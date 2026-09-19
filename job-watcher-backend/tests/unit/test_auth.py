@@ -71,3 +71,17 @@ def test_patch_me(mock_verify):
     assert response2.status_code == 200
     assert response2.json()["telegram_chat_id"] == "987654"
     assert response2.json()["is_active"] is True  # Did not change
+
+@patch("app.core.auth.dependencies.verify_token")
+def test_missing_sub_fails(mock_verify):
+    # Missing sub claim in payload
+    mock_verify.return_value = {"email": "no_sub@test.com"}
+    response = client.get("/api/v1/me", headers={"Authorization": "Bearer fake_token"})
+    assert response.status_code == 401
+    assert "Token missing 'sub' claim" in response.json()["detail"]
+
+def test_unauthenticated_dashboard_returns_401():
+    response = client.get("/api/v1/dashboard/summary")
+    assert response.status_code == 401
+    assert "Missing authorization header" in response.json()["detail"] or "Not authenticated" in response.json()["detail"]
+

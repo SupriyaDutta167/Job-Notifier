@@ -16,11 +16,15 @@ import { ScansPage } from './pages/ScansPage';
 import { ScanDetailPage } from './pages/ScanDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 
+import { LandingPage } from './pages/LandingPage';
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           
@@ -47,8 +51,7 @@ function App() {
           </Route>
 
           {/* Fallback Route */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     TELEGRAM_API_BASE_URL: str = "https://api.telegram.org"
     
     SUPABASE_URL: str = ""
+    JWT_LEEWAY_SECONDS: int = 60
     
     @property
     def supabase_jwks_url(self) -> str:
